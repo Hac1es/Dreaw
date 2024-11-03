@@ -10,30 +10,18 @@ using System.Windows.Forms;
 
 namespace Dreaw
 {
-    public partial class Form1 : Form
+    public partial class Siginform : Form
     {
-        public Form1()
+        public Siginform()
         {
             InitializeComponent();
         }
 
-        private void ptbStart_Click(object sender, EventArgs e)
+        private void pictureBox2_Click(object sender, EventArgs e)
         {
-
-        }
-
-        private void Form1_Load(object sender, EventArgs e)
-        {
-
-        }
-
-        private void btStart_Click(object sender, EventArgs e)
-        {
-            
+            // Khởi tạo và mở Form2
             Loginform newForm = new Loginform();
-
-            newForm.ShowDialog();
-
+            newForm.Show();
             this.Hide();
         }
     }

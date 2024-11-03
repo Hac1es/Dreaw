@@ -13,10 +13,12 @@ namespace Dreaw
         /// </summary>
         [STAThread]
         static void Main()
-        {
+        {   
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
-            Application.Run(new Form1());
+            Startform form1 = new Startform();
+            form1.Show(); // Hiển thị Form1 đầu tiên
+            Application.Run();
         }
     }
 }
