@@ -4,13 +4,14 @@
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>4dc858f1-6a0c-498f-ae40-a46c07a0c03a</ProjectGuid>
     <ProjectHome>.</ProjectHome>
-    <StartupFile>FlaskAPI.py</StartupFile>
+    <StartupFile>app.py</StartupFile>
     <SearchPath>
     </SearchPath>
     <WorkingDirectory>.</WorkingDirectory>
     <OutputPath>.</OutputPath>
     <Name>FlaskAPI</Name>
     <RootNamespace>FlaskAPI</RootNamespace>
+    <InterpreterId>MSBuild|venv|$(MSBuildProjectFullPath)</InterpreterId>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
     <DebugSymbols>true</DebugSymbols>
@@ -21,7 +22,32 @@
     <EnableUnmanagedDebugging>false</EnableUnmanagedDebugging>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="FlaskAPI.py" />
+    <Compile Include="app.py" />
+    <Compile Include="lib\PaddleOCR\controller.py" />
+    <Compile Include="lib\PaddleOCR\services.py" />
+    <Compile Include="lib\__init__.py" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="lib\" />
+    <Folder Include="lib\PaddleOCR\" />
+    <Folder Include="lib\PaddleOCR\__pycache__\" />
+    <Folder Include="lib\__pycache__\" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="lib\PaddleOCR\__pycache__\controller.cpython-312.pyc" />
+    <Content Include="lib\PaddleOCR\__pycache__\services.cpython-312.pyc" />
+    <Content Include="lib\__pycache__\__init__.cpython-312.pyc" />
+  </ItemGroup>
+  <ItemGroup>
+    <Interpreter Include="C:\Users\nchin\venv\">
+      <Id>venv</Id>
+      <Version>0.0</Version>
+      <Description>venv (Python 3.12 (64-bit))</Description>
+      <InterpreterPath>Scripts\python.exe</InterpreterPath>
+      <WindowsInterpreterPath>Scripts\pythonw.exe</WindowsInterpreterPath>
+      <PathEnvironmentVariable>PYTHONPATH</PathEnvironmentVariable>
+      <Architecture>X64</Architecture>
+    </Interpreter>
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\Python Tools\Microsoft.PythonTools.targets" />
   <!-- Uncomment the CoreCompile target to enable the Build command in
