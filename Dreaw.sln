@@ -3,8 +3,6 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.11.35327.3
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Dreaw", "Dreaw\Dreaw.csproj", "{58130AE4-34C2-4194-AD0A-7C6ED18B35AB}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DoAnPaint", "DoAnPaint\DoAnPaint.csproj", "{A793DB4D-CCF3-4770-B850-4508D6E540EE}"
 EndProject
 Project("{888888A0-9F3D-457C-B088-3A5042F75D52}") = "FlaskAPI", "FlaskAPI\FlaskAPI.pyproj", "{4DC858F1-6A0C-498F-AE40-A46C07A0C03A}"
@@ -17,10 +15,6 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{58130AE4-34C2-4194-AD0A-7C6ED18B35AB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{58130AE4-34C2-4194-AD0A-7C6ED18B35AB}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{58130AE4-34C2-4194-AD0A-7C6ED18B35AB}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{58130AE4-34C2-4194-AD0A-7C6ED18B35AB}.Release|Any CPU.Build.0 = Release|Any CPU
 		{A793DB4D-CCF3-4770-B850-4508D6E540EE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{A793DB4D-CCF3-4770-B850-4508D6E540EE}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A793DB4D-CCF3-4770-B850-4508D6E540EE}.Release|Any CPU.ActiveCfg = Release|Any CPU
