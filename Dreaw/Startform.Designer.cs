@@ -36,7 +36,7 @@
             // 
             // pictureBox2
             // 
-            this.pictureBox2.BackgroundImage = global::Dreaw.Properties.Resources.Screenshot_2024_11_03_003757;
+            this.pictureBox2.BackgroundImage = global::Dreaw.Properties.Resources.startbt;
             this.pictureBox2.Location = new System.Drawing.Point(467, 422);
             this.pictureBox2.Name = "pictureBox2";
             this.pictureBox2.Size = new System.Drawing.Size(277, 68);

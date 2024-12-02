@@ -46,6 +46,18 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="code.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="code.Designer.cs">
+      <DependentUpon>code.cs</DependentUpon>
+    </Compile>
+    <Compile Include="forgetpw.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="forgetpw.Designer.cs">
+      <DependentUpon>forgetpw.cs</DependentUpon>
+    </Compile>
     <Compile Include="Form1.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -57,6 +69,12 @@
     </Compile>
     <Compile Include="Loginform.Designer.cs">
       <DependentUpon>Loginform.cs</DependentUpon>
+    </Compile>
+    <Compile Include="newpw.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="newpw.Designer.cs">
+      <DependentUpon>newpw.cs</DependentUpon>
     </Compile>
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -72,11 +90,26 @@
     <Compile Include="Startform.Designer.cs">
       <DependentUpon>Startform.cs</DependentUpon>
     </Compile>
+    <Compile Include="world.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="world.Designer.cs">
+      <DependentUpon>world.cs</DependentUpon>
+    </Compile>
+    <EmbeddedResource Include="code.resx">
+      <DependentUpon>code.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="forgetpw.resx">
+      <DependentUpon>forgetpw.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Form1.resx">
       <DependentUpon>Form1.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Loginform.resx">
       <DependentUpon>Loginform.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="newpw.resx">
+      <DependentUpon>newpw.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
@@ -93,6 +126,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Startform.resx">
       <DependentUpon>Startform.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="world.resx">
+      <DependentUpon>world.cs</DependentUpon>
     </EmbeddedResource>
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
@@ -139,6 +175,42 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\4.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\world.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\newpass.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\code.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\mail.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\create.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\use.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Screenshot 2024-11-10 130821.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Screenshot 2024-11-10 125524.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Screenshot 2024-11-10 125514.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\sigout.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\join.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\wolrd.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
