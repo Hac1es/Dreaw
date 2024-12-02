@@ -15,13 +15,57 @@ namespace DoAnPaint
 {
     public partial class Form1 : Form
     {
+        #region Fields
         private Graphics gr;
+        private Bitmap bmp;
+        private Command command;
+        bool isPainting = false;
+        Color color;
+        Point pointX, pointy;
+        int x, y, sX, sY, cX, cY;
+        Pen pen = new Pen(Color.Black, 2);
+        readonly Pen eraser = new Pen(Color.White, 4);
+        int width;
+        #endregion
 
+        #region DrawMethods
+        static Point SetPoint(PictureBox pictureBox, Point point)
+        {
+            float pX = 1f * pictureBox.Image.Width / pictureBox.Width;
+            float pY = 1f * pictureBox.Image.Height / pictureBox.Height;
+            return new Point((int)(point.X * pX), (int)(point.Y * pY));
+        }
+
+        private void Validate(Bitmap bitmap, Stack<Point> ptStack, int x, int y, Color b4, Color after)
+        {
+            Color current = bitmap.GetPixel(x, y);
+            if (current == b4)
+            {
+                ptStack.Push(new Point(x, y));
+                bitmap.SetPixel(x, y, after);
+            }
+        }
+
+        public void FillUp(Bitmap bitmap, int x, int y, Color New)
+        {
+            Color Old = bitmap.GetPixel(x, y);
+            Stack<Point> ptStack = new Stack<Point>();
+
+        }
+        #endregion
 
         public Form1()
         {
             InitializeComponent();
+            bmp = new Bitmap(ptbDrawing.Width, ptbDrawing.Height);
             gr = ptbDrawing.CreateGraphics();
+        }
+
+        public Form1(Bitmap remoteBmp)
+        {
+            InitializeComponent();
+            bmp = remoteBmp;
+            gr = Graphics.FromImage(remoteBmp);
         }
 
         //Sự kiện click chuột, gửi yêu cầu xử lý nhấn chuột đến presenter

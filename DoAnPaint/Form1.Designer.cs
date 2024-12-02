@@ -33,9 +33,7 @@
             this.panel1 = new System.Windows.Forms.Panel();
             this.label5 = new System.Windows.Forms.Label();
             this.pictureBox21 = new System.Windows.Forms.PictureBox();
-            this.panel2 = new System.Windows.Forms.Panel();
             this.btnSelect = new System.Windows.Forms.Button();
-            this.btnDelete = new System.Windows.Forms.Button();
             this.label4 = new System.Windows.Forms.Label();
             this.pictureBox32 = new System.Windows.Forms.PictureBox();
             this.label3 = new System.Windows.Forms.Label();
@@ -88,11 +86,10 @@
             this.label6 = new System.Windows.Forms.Label();
             this.guna2ContextMenuStrip1 = new Guna.UI2.WinForms.Guna2ContextMenuStrip();
             this.chatPanel = new Guna.UI2.WinForms.Guna2CustomGradientPanel();
-            this.transparentRichTextBox1 = new DoAnPaint.Utils.TransparentRichTextBox();
             this.msgBox = new Guna.UI2.WinForms.Guna2TextBox();
+            this.transparentRichTextBox1 = new DoAnPaint.Utils.TransparentRichTextBox();
             this.panel1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox21)).BeginInit();
-            this.panel2.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox32)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.ptbEditColor)).BeginInit();
             this.panel5.SuspendLayout();
@@ -128,9 +125,9 @@
             // panel1
             // 
             this.panel1.BackColor = System.Drawing.SystemColors.Control;
+            this.panel1.Controls.Add(this.btnSelect);
             this.panel1.Controls.Add(this.label5);
             this.panel1.Controls.Add(this.pictureBox21);
-            this.panel1.Controls.Add(this.panel2);
             this.panel1.Controls.Add(this.label4);
             this.panel1.Controls.Add(this.pictureBox32);
             this.panel1.Controls.Add(this.label3);
@@ -172,16 +169,6 @@
             this.pictureBox21.TabStop = false;
             this.Tips.SetToolTip(this.pictureBox21, "Save to database");
             // 
-            // panel2
-            // 
-            this.panel2.Controls.Add(this.btnSelect);
-            this.panel2.Controls.Add(this.btnDelete);
-            this.panel2.Location = new System.Drawing.Point(1199, 4);
-            this.panel2.Margin = new System.Windows.Forms.Padding(4);
-            this.panel2.Name = "panel2";
-            this.panel2.Size = new System.Drawing.Size(152, 133);
-            this.panel2.TabIndex = 15;
-            // 
             // btnSelect
             // 
             this.btnSelect.BackColor = System.Drawing.Color.Transparent;
@@ -190,34 +177,16 @@
             this.btnSelect.Font = new System.Drawing.Font("Segoe UI Light", 10.2F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.btnSelect.Image = ((System.Drawing.Image)(resources.GetObject("btnSelect.Image")));
             this.btnSelect.ImageAlign = System.Drawing.ContentAlignment.MiddleLeft;
-            this.btnSelect.Location = new System.Drawing.Point(4, 4);
+            this.btnSelect.Location = new System.Drawing.Point(1204, 44);
             this.btnSelect.Margin = new System.Windows.Forms.Padding(4);
             this.btnSelect.Name = "btnSelect";
             this.btnSelect.Size = new System.Drawing.Size(146, 60);
             this.btnSelect.TabIndex = 3;
             this.btnSelect.Text = "Cursor";
             this.btnSelect.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageBeforeText;
-            this.Tips.SetToolTip(this.btnSelect, "Select");
+            this.Tips.SetToolTip(this.btnSelect, "Back to cursor");
             this.btnSelect.UseVisualStyleBackColor = false;
             this.btnSelect.Click += new System.EventHandler(this.btnSelect_Click);
-            // 
-            // btnDelete
-            // 
-            this.btnDelete.BackColor = System.Drawing.Color.Transparent;
-            this.btnDelete.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.btnDelete.Font = new System.Drawing.Font("Segoe UI Light", 10.2F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.btnDelete.Image = ((System.Drawing.Image)(resources.GetObject("btnDelete.Image")));
-            this.btnDelete.ImageAlign = System.Drawing.ContentAlignment.MiddleLeft;
-            this.btnDelete.Location = new System.Drawing.Point(4, 64);
-            this.btnDelete.Margin = new System.Windows.Forms.Padding(4);
-            this.btnDelete.Name = "btnDelete";
-            this.btnDelete.Size = new System.Drawing.Size(146, 60);
-            this.btnDelete.TabIndex = 8;
-            this.btnDelete.Text = "Delete";
-            this.btnDelete.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageBeforeText;
-            this.Tips.SetToolTip(this.btnDelete, "Delete what selected");
-            this.btnDelete.UseVisualStyleBackColor = true;
-            this.btnDelete.Click += new System.EventHandler(this.btnDelete_Click);
             // 
             // label4
             // 
@@ -316,6 +285,7 @@
             this.pictureBox11.Size = new System.Drawing.Size(33, 31);
             this.pictureBox11.TabIndex = 37;
             this.pictureBox11.TabStop = false;
+            this.Tips.SetToolTip(this.pictureBox11, "Orchid");
             this.pictureBox11.Click += new System.EventHandler(this.btnChangeColor_Click);
             // 
             // pictureBox12
@@ -327,6 +297,7 @@
             this.pictureBox12.Size = new System.Drawing.Size(33, 31);
             this.pictureBox12.TabIndex = 36;
             this.pictureBox12.TabStop = false;
+            this.Tips.SetToolTip(this.pictureBox12, "Steel Blue");
             this.pictureBox12.Click += new System.EventHandler(this.btnChangeColor_Click);
             // 
             // pictureBox13
@@ -338,6 +309,7 @@
             this.pictureBox13.Size = new System.Drawing.Size(33, 31);
             this.pictureBox13.TabIndex = 35;
             this.pictureBox13.TabStop = false;
+            this.Tips.SetToolTip(this.pictureBox13, "Sky Blue");
             this.pictureBox13.Click += new System.EventHandler(this.btnChangeColor_Click);
             // 
             // pictureBox14
@@ -349,6 +321,7 @@
             this.pictureBox14.Size = new System.Drawing.Size(33, 31);
             this.pictureBox14.TabIndex = 34;
             this.pictureBox14.TabStop = false;
+            this.Tips.SetToolTip(this.pictureBox14, "Lime");
             this.pictureBox14.Click += new System.EventHandler(this.btnChangeColor_Click);
             // 
             // pictureBox15
@@ -360,6 +333,7 @@
             this.pictureBox15.Size = new System.Drawing.Size(33, 31);
             this.pictureBox15.TabIndex = 33;
             this.pictureBox15.TabStop = false;
+            this.Tips.SetToolTip(this.pictureBox15, "Sandy Brown");
             this.pictureBox15.Click += new System.EventHandler(this.btnChangeColor_Click);
             // 
             // pictureBox16
@@ -371,6 +345,7 @@
             this.pictureBox16.Size = new System.Drawing.Size(33, 31);
             this.pictureBox16.TabIndex = 32;
             this.pictureBox16.TabStop = false;
+            this.Tips.SetToolTip(this.pictureBox16, "Tomato");
             this.pictureBox16.Click += new System.EventHandler(this.btnChangeColor_Click);
             // 
             // pictureBox17
@@ -382,6 +357,7 @@
             this.pictureBox17.Size = new System.Drawing.Size(33, 31);
             this.pictureBox17.TabIndex = 31;
             this.pictureBox17.TabStop = false;
+            this.Tips.SetToolTip(this.pictureBox17, "Pink");
             this.pictureBox17.Click += new System.EventHandler(this.btnChangeColor_Click);
             // 
             // pictureBox18
@@ -393,6 +369,7 @@
             this.pictureBox18.Size = new System.Drawing.Size(33, 31);
             this.pictureBox18.TabIndex = 30;
             this.pictureBox18.TabStop = false;
+            this.Tips.SetToolTip(this.pictureBox18, "Rosy Brown");
             this.pictureBox18.Click += new System.EventHandler(this.btnChangeColor_Click);
             // 
             // pictureBox19
@@ -404,6 +381,7 @@
             this.pictureBox19.Size = new System.Drawing.Size(33, 31);
             this.pictureBox19.TabIndex = 29;
             this.pictureBox19.TabStop = false;
+            this.Tips.SetToolTip(this.pictureBox19, "Sliver");
             this.pictureBox19.Click += new System.EventHandler(this.btnChangeColor_Click);
             // 
             // pictureBox20
@@ -415,6 +393,7 @@
             this.pictureBox20.Size = new System.Drawing.Size(33, 31);
             this.pictureBox20.TabIndex = 28;
             this.pictureBox20.TabStop = false;
+            this.Tips.SetToolTip(this.pictureBox20, "White");
             this.pictureBox20.Click += new System.EventHandler(this.btnChangeColor_Click);
             // 
             // pictureBox7
@@ -426,6 +405,7 @@
             this.pictureBox7.Size = new System.Drawing.Size(33, 31);
             this.pictureBox7.TabIndex = 27;
             this.pictureBox7.TabStop = false;
+            this.Tips.SetToolTip(this.pictureBox7, "Magenta");
             this.pictureBox7.Click += new System.EventHandler(this.btnChangeColor_Click);
             // 
             // pictureBox8
@@ -437,6 +417,7 @@
             this.pictureBox8.Size = new System.Drawing.Size(33, 31);
             this.pictureBox8.TabIndex = 26;
             this.pictureBox8.TabStop = false;
+            this.Tips.SetToolTip(this.pictureBox8, "Dark Blue");
             this.pictureBox8.Click += new System.EventHandler(this.btnChangeColor_Click);
             // 
             // pictureBox9
@@ -448,6 +429,7 @@
             this.pictureBox9.Size = new System.Drawing.Size(33, 31);
             this.pictureBox9.TabIndex = 25;
             this.pictureBox9.TabStop = false;
+            this.Tips.SetToolTip(this.pictureBox9, "Cyan");
             this.pictureBox9.Click += new System.EventHandler(this.btnChangeColor_Click);
             // 
             // pictureBox10
@@ -459,6 +441,7 @@
             this.pictureBox10.Size = new System.Drawing.Size(33, 31);
             this.pictureBox10.TabIndex = 24;
             this.pictureBox10.TabStop = false;
+            this.Tips.SetToolTip(this.pictureBox10, "Green");
             this.pictureBox10.Click += new System.EventHandler(this.btnChangeColor_Click);
             // 
             // pictureBox4
@@ -470,6 +453,7 @@
             this.pictureBox4.Size = new System.Drawing.Size(33, 31);
             this.pictureBox4.TabIndex = 23;
             this.pictureBox4.TabStop = false;
+            this.Tips.SetToolTip(this.pictureBox4, "Yellow");
             this.pictureBox4.Click += new System.EventHandler(this.btnChangeColor_Click);
             // 
             // pictureBox5
@@ -481,6 +465,7 @@
             this.pictureBox5.Size = new System.Drawing.Size(33, 31);
             this.pictureBox5.TabIndex = 22;
             this.pictureBox5.TabStop = false;
+            this.Tips.SetToolTip(this.pictureBox5, "Orange");
             this.pictureBox5.Click += new System.EventHandler(this.btnChangeColor_Click);
             // 
             // pictureBox6
@@ -492,6 +477,7 @@
             this.pictureBox6.Size = new System.Drawing.Size(33, 31);
             this.pictureBox6.TabIndex = 21;
             this.pictureBox6.TabStop = false;
+            this.Tips.SetToolTip(this.pictureBox6, "Dark Red");
             this.pictureBox6.Click += new System.EventHandler(this.btnChangeColor_Click);
             // 
             // pictureBox3
@@ -503,6 +489,7 @@
             this.pictureBox3.Size = new System.Drawing.Size(33, 31);
             this.pictureBox3.TabIndex = 20;
             this.pictureBox3.TabStop = false;
+            this.Tips.SetToolTip(this.pictureBox3, "Maroon");
             this.pictureBox3.Click += new System.EventHandler(this.btnChangeColor_Click);
             // 
             // pictureBox2
@@ -514,6 +501,7 @@
             this.pictureBox2.Size = new System.Drawing.Size(33, 31);
             this.pictureBox2.TabIndex = 19;
             this.pictureBox2.TabStop = false;
+            this.Tips.SetToolTip(this.pictureBox2, "Gray");
             this.pictureBox2.Click += new System.EventHandler(this.btnChangeColor_Click);
             // 
             // pictureBox1
@@ -525,6 +513,7 @@
             this.pictureBox1.Size = new System.Drawing.Size(33, 31);
             this.pictureBox1.TabIndex = 18;
             this.pictureBox1.TabStop = false;
+            this.Tips.SetToolTip(this.pictureBox1, "Black");
             this.pictureBox1.Click += new System.EventHandler(this.btnChangeColor_Click);
             // 
             // label1
@@ -854,15 +843,6 @@
             this.chatPanel.Visible = false;
             this.chatPanel.Paint += new System.Windows.Forms.PaintEventHandler(this.chatPanel_Paint);
             // 
-            // transparentRichTextBox1
-            // 
-            this.transparentRichTextBox1.BorderStyle = System.Windows.Forms.BorderStyle.None;
-            this.transparentRichTextBox1.Location = new System.Drawing.Point(12, 5);
-            this.transparentRichTextBox1.Name = "transparentRichTextBox1";
-            this.transparentRichTextBox1.Size = new System.Drawing.Size(468, 356);
-            this.transparentRichTextBox1.TabIndex = 30;
-            this.transparentRichTextBox1.Text = "";
-            // 
             // msgBox
             // 
             this.msgBox.BackColor = System.Drawing.Color.Transparent;
@@ -893,6 +873,15 @@
             this.msgBox.Size = new System.Drawing.Size(496, 49);
             this.msgBox.TabIndex = 28;
             // 
+            // transparentRichTextBox1
+            // 
+            this.transparentRichTextBox1.BorderStyle = System.Windows.Forms.BorderStyle.None;
+            this.transparentRichTextBox1.Location = new System.Drawing.Point(12, 5);
+            this.transparentRichTextBox1.Name = "transparentRichTextBox1";
+            this.transparentRichTextBox1.Size = new System.Drawing.Size(468, 356);
+            this.transparentRichTextBox1.TabIndex = 30;
+            this.transparentRichTextBox1.Text = "";
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
@@ -918,7 +907,6 @@
             this.panel1.ResumeLayout(false);
             this.panel1.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox21)).EndInit();
-            this.panel2.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox32)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.ptbEditColor)).EndInit();
             this.panel5.ResumeLayout(false);
@@ -1006,8 +994,6 @@
         private System.Windows.Forms.PictureBox pictureBox33;
         private System.Windows.Forms.Label RoomIDShow;
         private System.Windows.Forms.Button btnSelect;
-        private System.Windows.Forms.Button btnDelete;
-        private System.Windows.Forms.Panel panel2;
         private System.Windows.Forms.Label label5;
         private System.Windows.Forms.PictureBox pictureBox21;
         private System.Windows.Forms.Label label6;

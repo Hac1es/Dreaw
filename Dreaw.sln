@@ -3,11 +3,13 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.11.35327.3
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DoAnPaint", "DoAnPaint\DoAnPaint.csproj", "{A793DB4D-CCF3-4770-B850-4508D6E540EE}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DrawingForm", "DoAnPaint\DrawingForm.csproj", "{A793DB4D-CCF3-4770-B850-4508D6E540EE}"
 EndProject
 Project("{888888A0-9F3D-457C-B088-3A5042F75D52}") = "FlaskAPI", "FlaskAPI\FlaskAPI.pyproj", "{4DC858F1-6A0C-498F-AE40-A46C07A0C03A}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Server", "SignalRServer\Server.csproj", "{4768038E-C951-4DDA-84B0-CB2BCBD9DF8F}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CoreApp", "CoreApp\CoreApp.csproj", "{58130AE4-34C2-4194-AD0A-7C6ED18B35AB}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -25,6 +27,10 @@ Global
 		{4768038E-C951-4DDA-84B0-CB2BCBD9DF8F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{4768038E-C951-4DDA-84B0-CB2BCBD9DF8F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{4768038E-C951-4DDA-84B0-CB2BCBD9DF8F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{58130AE4-34C2-4194-AD0A-7C6ED18B35AB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{58130AE4-34C2-4194-AD0A-7C6ED18B35AB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{58130AE4-34C2-4194-AD0A-7C6ED18B35AB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{58130AE4-34C2-4194-AD0A-7C6ED18B35AB}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
