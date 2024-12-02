@@ -24,5 +24,21 @@ namespace Dreaw
             newForm.Show();
             this.Hide();
         }
+
+        private void pictureBox4_Click(object sender, EventArgs e)
+        {
+            // Khởi tạo và mở Form2
+            forgetpw newForm = new forgetpw();
+            newForm.Show();
+            this.Hide();
+        }
+
+        private void pictureBox3_Click(object sender, EventArgs e)
+        {
+            // Khởi tạo và mở Form2
+            world newForm = new world();
+            newForm.Show();
+            this.Hide();
+        }
     }
 }

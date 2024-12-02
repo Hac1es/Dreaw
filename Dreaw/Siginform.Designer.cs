@@ -80,7 +80,7 @@
             this.pictureBox2.BackgroundImage = global::Dreaw.Properties.Resources._3;
             this.pictureBox2.Location = new System.Drawing.Point(176, 111);
             this.pictureBox2.Name = "pictureBox2";
-            this.pictureBox2.Size = new System.Drawing.Size(200, 49);
+            this.pictureBox2.Size = new System.Drawing.Size(198, 45);
             this.pictureBox2.TabIndex = 5;
             this.pictureBox2.TabStop = false;
             this.pictureBox2.Click += new System.EventHandler(this.pictureBox2_Click);

@@ -66,6 +66,7 @@
             this.pictureBox4.Size = new System.Drawing.Size(121, 22);
             this.pictureBox4.TabIndex = 6;
             this.pictureBox4.TabStop = false;
+            this.pictureBox4.Click += new System.EventHandler(this.pictureBox4_Click);
             // 
             // pictureBox3
             // 
@@ -75,13 +76,14 @@
             this.pictureBox3.Size = new System.Drawing.Size(176, 43);
             this.pictureBox3.TabIndex = 5;
             this.pictureBox3.TabStop = false;
+            this.pictureBox3.Click += new System.EventHandler(this.pictureBox3_Click);
             // 
             // pictureBox2
             // 
             this.pictureBox2.BackgroundImage = global::Dreaw.Properties.Resources.SigBut;
-            this.pictureBox2.Location = new System.Drawing.Point(399, 120);
+            this.pictureBox2.Location = new System.Drawing.Point(394, 119);
             this.pictureBox2.Name = "pictureBox2";
-            this.pictureBox2.Size = new System.Drawing.Size(204, 49);
+            this.pictureBox2.Size = new System.Drawing.Size(205, 46);
             this.pictureBox2.TabIndex = 4;
             this.pictureBox2.TabStop = false;
             this.pictureBox2.Click += new System.EventHandler(this.pictureBox2_Click);
