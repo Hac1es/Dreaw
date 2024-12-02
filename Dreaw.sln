@@ -9,7 +9,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DoAnPaint", "DoAnPaint\DoAn
 EndProject
 Project("{888888A0-9F3D-457C-B088-3A5042F75D52}") = "FlaskAPI", "FlaskAPI\FlaskAPI.pyproj", "{4DC858F1-6A0C-498F-AE40-A46C07A0C03A}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SignalRServer", "SignalRServer\SignalRServer.csproj", "{4768038E-C951-4DDA-84B0-CB2BCBD9DF8F}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Server", "SignalRServer\Server.csproj", "{4768038E-C951-4DDA-84B0-CB2BCBD9DF8F}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

@@ -37,6 +37,7 @@
     <Content Include="lib\PaddleOCR\__pycache__\controller.cpython-312.pyc" />
     <Content Include="lib\PaddleOCR\__pycache__\services.cpython-312.pyc" />
     <Content Include="lib\__pycache__\__init__.cpython-312.pyc" />
+    <Content Include="requirements.txt" />
   </ItemGroup>
   <ItemGroup>
     <Interpreter Include="C:\Users\nchin\venv\">

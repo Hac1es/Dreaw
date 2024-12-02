@@ -25,6 +25,6 @@ app.UseAuthorization();
 
 app.MapControllers();
 
-app.MapHub<DreawHub>("hub");
+app.MapHub<DreawHub>("api/hub");
 
 app.Run();

@@ -1,10 +1,18 @@
 from paddleocr import PaddleOCR
+from itertools import takewhile
 #Khởi tạo ocr
 ocr = PaddleOCR(lang="vi", use_angle_cls=True, det_db_box_thresh=0.2, det_db_unclip_ratio=2.0, use_gpu=True, score_threshold=0, rec_batch_num=12);
 
+# Tìm số khoảng trắng ở đầu mỗi dòng
+def count_leading_spaces(line):
+    """
+    Đếm số khoảng trắng mỗi dòng
+    """
+    return len(list(takewhile(lambda x: x == ' ', line)))
+
 def calculate_canvas_size(img_width, img_height, max_width=70):
     """
-    Tính toán kích thước canvas dựa trên kích thước ảnh và giới hạn.
+    Tính toán kích thước canvas dựa trên kích thước ảnh và giới hạn
     """
     # Giả định chiều rộng mong muốn
     canvas_width = min(max_width, img_width // 20)  # Tùy chỉnh độ phân giải xuống
@@ -14,18 +22,17 @@ def calculate_canvas_size(img_width, img_height, max_width=70):
 
 def map_to_canvas(x, y, img_width, img_height, canvas_width, canvas_height):
     """
-    Tạo ra tọa độ chữ canvas giả lập dựa trên tọa độ ảnh
+    Tạo ra tọa độ chữ trên canvas giả lập dựa trên tọa độ chữ trên ảnh
     """
     canvas_x = int(round(x / img_width * (canvas_width - 1)))
     canvas_y = int(round(y / img_height * (canvas_height - 1)))
     return canvas_x, canvas_y
 
-def draw_text_on_canvas_optimized(data, img_width, img_height, canvas_width, canvas_height):
+def draw_text_on_canvas(data, img_width, img_height, canvas_width, canvas_height):
     """
     Tạo ra một chuỗi giả lập lại bức ảnh
     """
     canvas = {}
-
     for sublist in data:
         for item in sublist:
             bbox = item[0]
@@ -33,15 +40,12 @@ def draw_text_on_canvas_optimized(data, img_width, img_height, canvas_width, can
             center_x = sum([point[0] for point in bbox]) / len(bbox)
             center_y = sum([point[1] for point in bbox]) / len(bbox)
             canvas_x, canvas_y = map_to_canvas(center_x, center_y, img_width, img_height, canvas_width, canvas_height)
-
             # Kiểm tra nếu dòng Y chưa có trong canvas
             if canvas_y not in canvas:
                 canvas[canvas_y] = [" " for _ in range(canvas_width)]
-            
             line = canvas[canvas_y]
             text_start = max(0, canvas_x - len(text) // 2)
             text_end = min(canvas_width, text_start + len(text))
-
             # Kiểm tra và xử lý va chạm
             collision = False
             while not collision:
@@ -53,21 +57,21 @@ def draw_text_on_canvas_optimized(data, img_width, img_height, canvas_width, can
                         text_start += 1
                         text_end = min(canvas_width, text_start + len(text))
                         break
-
                 # Nếu không có không gian trống, bỏ qua văn bản này
                 if text_start >= canvas_width:
                     break
-
             # Vẽ văn bản sau khi xử lý va chạm
             if collision:
                 for i, char in enumerate(text[:text_end - text_start]):
                     line[text_start + i] = char
-
     # Chuyển từ điển thành danh sách các dòng, giữ nguyên thứ tự
     sorted_keys = sorted(canvas.keys())
     filtered_canvas = [canvas[key] for key in sorted_keys]
-
-    return filtered_canvas
+    # Tìm số khoảng trắng ít nhất trong tất cả các dòng
+    min_spaces = min(count_leading_spaces(line) for line in filtered_canvas)
+    # Cắt bỏ số khoảng trắng đó ở mỗi dòng
+    trimmed_canvas = [line[min_spaces:] for line in filtered_canvas]
+    return trimmed_canvas
 
 def process(img):
     data = ocr.ocr(img)
@@ -76,7 +80,7 @@ def process(img):
     # Vẽ canvas ASCII
     img_height, img_width = img.shape[:2]
     canvas_width, canvas_height = calculate_canvas_size(img_width, img_height)
-    canvas = draw_text_on_canvas_optimized(data, img_width, img_height, canvas_width, canvas_height)
+    canvas = draw_text_on_canvas(data, img_width, img_height, canvas_width, canvas_height)
 
     # Chuyển canvas thành chuỗi ASCII
     ascii_art = "\n".join("".join(line) for line in canvas)

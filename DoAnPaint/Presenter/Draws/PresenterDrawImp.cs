@@ -48,25 +48,25 @@ namespace DoAnPaint.Presenter
 
         public void handleClickToSelect(Point p)
         {
-            for (int i = 0; i < dataManager.shapeList.Count; ++i)
+            foreach (var shape in dataManager.shapeList)
             {
-                if (!(dataManager.shapeList[i] is MPen))
-                    dataManager.pointToResize = dataManager.shapeList[i].isHitControlsPoint(p);
+                if (!(shape is MPen))
+                    dataManager.pointToResize = shape.isHitControlsPoint(p);
                 if (dataManager.pointToResize != -1)
                 {
-                    dataManager.shapeList[i].changePoint(dataManager.pointToResize);
-                    dataManager.shapeToMove = dataManager.shapeList[i];
+                    shape.changePoint(dataManager.pointToResize);
+                    dataManager.shapeToMove = shape;
                     break;
                 }
-                else if (dataManager.shapeList[i].isHit(p))
+                else if (shape.isHit(p))
                 {
-                    dataManager.shapeToMove = dataManager.shapeList[i];
-                    dataManager.shapeList[i].isSelected = true;
-                    if (dataManager.shapeList[i] is MPen)
+                    dataManager.shapeToMove = shape;
+                    shape.isSelected = true;
+                    if (shape is MPen)
                     {
-                        if (((MPen)dataManager.shapeList[i]).isEraser)
+                        if (((MPen)shape).isEraser)
                         {
-                            dataManager.shapeList[i].isSelected = false;
+                            shape.isSelected = false;
                             dataManager.shapeToMove = null;
                         }
                     }
@@ -235,7 +235,6 @@ namespace DoAnPaint.Presenter
                 }
                 else
                 {
-
                     //TODO: Kiếm tra xem trong danh sách tồn tại hình nào chứa điểm p không
                     if (dataManager.shapeList.Exists(shape => isInside(shape, p)))
                     {

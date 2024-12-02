@@ -36,8 +36,6 @@
             this.panel2 = new System.Windows.Forms.Panel();
             this.btnSelect = new System.Windows.Forms.Button();
             this.btnDelete = new System.Windows.Forms.Button();
-            this.btnClear = new System.Windows.Forms.Button();
-            this.btnSave = new System.Windows.Forms.Button();
             this.label4 = new System.Windows.Forms.Label();
             this.pictureBox32 = new System.Windows.Forms.PictureBox();
             this.label3 = new System.Windows.Forms.Label();
@@ -67,11 +65,14 @@
             this.label1 = new System.Windows.Forms.Label();
             this.ptbColor = new System.Windows.Forms.PictureBox();
             this.panel4 = new System.Windows.Forms.Panel();
-            this.btnFill = new System.Windows.Forms.Button();
             this.btnPen = new System.Windows.Forms.Button();
             this.btnEraser = new System.Windows.Forms.Button();
+            this.btnClear = new System.Windows.Forms.Button();
+            this.btnSave = new System.Windows.Forms.Button();
             this.btnLineSize = new System.Windows.Forms.TrackBar();
             this.panel3 = new System.Windows.Forms.Panel();
+            this.label7 = new System.Windows.Forms.Label();
+            this.btnFill = new System.Windows.Forms.Button();
             this.btnLine = new System.Windows.Forms.Button();
             this.btnBezier = new System.Windows.Forms.Button();
             this.btnEllipse = new System.Windows.Forms.Button();
@@ -87,9 +88,8 @@
             this.label6 = new System.Windows.Forms.Label();
             this.guna2ContextMenuStrip1 = new Guna.UI2.WinForms.Guna2ContextMenuStrip();
             this.chatPanel = new Guna.UI2.WinForms.Guna2CustomGradientPanel();
-            this.msgBox = new Guna.UI2.WinForms.Guna2TextBox();
-            this.label7 = new System.Windows.Forms.Label();
             this.transparentRichTextBox1 = new DoAnPaint.Utils.TransparentRichTextBox();
+            this.msgBox = new Guna.UI2.WinForms.Guna2TextBox();
             this.panel1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox21)).BeginInit();
             this.panel2.SuspendLayout();
@@ -195,7 +195,7 @@
             this.btnSelect.Name = "btnSelect";
             this.btnSelect.Size = new System.Drawing.Size(146, 60);
             this.btnSelect.TabIndex = 3;
-            this.btnSelect.Text = "Select";
+            this.btnSelect.Text = "Cursor";
             this.btnSelect.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageBeforeText;
             this.Tips.SetToolTip(this.btnSelect, "Select");
             this.btnSelect.UseVisualStyleBackColor = false;
@@ -218,34 +218,6 @@
             this.Tips.SetToolTip(this.btnDelete, "Delete what selected");
             this.btnDelete.UseVisualStyleBackColor = true;
             this.btnDelete.Click += new System.EventHandler(this.btnDelete_Click);
-            // 
-            // btnClear
-            // 
-            this.btnClear.BackColor = System.Drawing.Color.Transparent;
-            this.btnClear.BackgroundImage = global::DoAnPaint.Properties.Resources.ic_clear;
-            this.btnClear.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch;
-            this.btnClear.Location = new System.Drawing.Point(18, 76);
-            this.btnClear.Margin = new System.Windows.Forms.Padding(4);
-            this.btnClear.Name = "btnClear";
-            this.btnClear.Size = new System.Drawing.Size(53, 49);
-            this.btnClear.TabIndex = 3;
-            this.Tips.SetToolTip(this.btnClear, "Clear canvas");
-            this.btnClear.UseVisualStyleBackColor = false;
-            this.btnClear.Click += new System.EventHandler(this.btnClear_Click);
-            // 
-            // btnSave
-            // 
-            this.btnSave.BackColor = System.Drawing.Color.Transparent;
-            this.btnSave.BackgroundImage = global::DoAnPaint.Properties.Resources.ic_save;
-            this.btnSave.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch;
-            this.btnSave.Location = new System.Drawing.Point(18, 9);
-            this.btnSave.Margin = new System.Windows.Forms.Padding(4);
-            this.btnSave.Name = "btnSave";
-            this.btnSave.Size = new System.Drawing.Size(53, 49);
-            this.btnSave.TabIndex = 7;
-            this.Tips.SetToolTip(this.btnSave, "Download");
-            this.btnSave.UseVisualStyleBackColor = false;
-            this.btnSave.Click += new System.EventHandler(this.btnSave_Click);
             // 
             // label4
             // 
@@ -588,20 +560,6 @@
             this.panel4.Size = new System.Drawing.Size(163, 133);
             this.panel4.TabIndex = 2;
             // 
-            // btnFill
-            // 
-            this.btnFill.BackColor = System.Drawing.Color.Transparent;
-            this.btnFill.BackgroundImage = global::DoAnPaint.Properties.Resources.ic_fill;
-            this.btnFill.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch;
-            this.btnFill.Location = new System.Drawing.Point(244, 10);
-            this.btnFill.Margin = new System.Windows.Forms.Padding(4);
-            this.btnFill.Name = "btnFill";
-            this.btnFill.Size = new System.Drawing.Size(62, 59);
-            this.btnFill.TabIndex = 14;
-            this.Tips.SetToolTip(this.btnFill, "Fill Shape: Off");
-            this.btnFill.UseVisualStyleBackColor = false;
-            this.btnFill.Click += new System.EventHandler(this.btnFill_Click);
-            // 
             // btnPen
             // 
             this.btnPen.BackColor = System.Drawing.Color.Transparent;
@@ -630,6 +588,34 @@
             this.btnEraser.UseVisualStyleBackColor = false;
             this.btnEraser.Click += new System.EventHandler(this.btnEraser_Click);
             // 
+            // btnClear
+            // 
+            this.btnClear.BackColor = System.Drawing.Color.Transparent;
+            this.btnClear.BackgroundImage = global::DoAnPaint.Properties.Resources.ic_clear;
+            this.btnClear.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch;
+            this.btnClear.Location = new System.Drawing.Point(18, 76);
+            this.btnClear.Margin = new System.Windows.Forms.Padding(4);
+            this.btnClear.Name = "btnClear";
+            this.btnClear.Size = new System.Drawing.Size(53, 49);
+            this.btnClear.TabIndex = 3;
+            this.Tips.SetToolTip(this.btnClear, "Clear canvas");
+            this.btnClear.UseVisualStyleBackColor = false;
+            this.btnClear.Click += new System.EventHandler(this.btnClear_Click);
+            // 
+            // btnSave
+            // 
+            this.btnSave.BackColor = System.Drawing.Color.Transparent;
+            this.btnSave.BackgroundImage = global::DoAnPaint.Properties.Resources.ic_save;
+            this.btnSave.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch;
+            this.btnSave.Location = new System.Drawing.Point(18, 9);
+            this.btnSave.Margin = new System.Windows.Forms.Padding(4);
+            this.btnSave.Name = "btnSave";
+            this.btnSave.Size = new System.Drawing.Size(53, 49);
+            this.btnSave.TabIndex = 7;
+            this.Tips.SetToolTip(this.btnSave, "Download");
+            this.btnSave.UseVisualStyleBackColor = false;
+            this.btnSave.Click += new System.EventHandler(this.btnSave_Click);
+            // 
             // btnLineSize
             // 
             this.btnLineSize.Location = new System.Drawing.Point(531, 21);
@@ -654,6 +640,31 @@
             this.panel3.Name = "panel3";
             this.panel3.Size = new System.Drawing.Size(316, 134);
             this.panel3.TabIndex = 1;
+            // 
+            // label7
+            // 
+            this.label7.AutoSize = true;
+            this.label7.Font = new System.Drawing.Font("Segoe UI Light", 18F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label7.Location = new System.Drawing.Point(7, 18);
+            this.label7.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            this.label7.Name = "label7";
+            this.label7.Size = new System.Drawing.Size(96, 41);
+            this.label7.TabIndex = 24;
+            this.label7.Text = "Shape";
+            // 
+            // btnFill
+            // 
+            this.btnFill.BackColor = System.Drawing.Color.Transparent;
+            this.btnFill.BackgroundImage = global::DoAnPaint.Properties.Resources.ic_fill;
+            this.btnFill.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch;
+            this.btnFill.Location = new System.Drawing.Point(244, 10);
+            this.btnFill.Margin = new System.Windows.Forms.Padding(4);
+            this.btnFill.Name = "btnFill";
+            this.btnFill.Size = new System.Drawing.Size(62, 59);
+            this.btnFill.TabIndex = 14;
+            this.Tips.SetToolTip(this.btnFill, "Fill Shape: Off");
+            this.btnFill.UseVisualStyleBackColor = false;
+            this.btnFill.Click += new System.EventHandler(this.btnFill_Click);
             // 
             // btnLine
             // 
@@ -843,6 +854,15 @@
             this.chatPanel.Visible = false;
             this.chatPanel.Paint += new System.Windows.Forms.PaintEventHandler(this.chatPanel_Paint);
             // 
+            // transparentRichTextBox1
+            // 
+            this.transparentRichTextBox1.BorderStyle = System.Windows.Forms.BorderStyle.None;
+            this.transparentRichTextBox1.Location = new System.Drawing.Point(12, 5);
+            this.transparentRichTextBox1.Name = "transparentRichTextBox1";
+            this.transparentRichTextBox1.Size = new System.Drawing.Size(468, 356);
+            this.transparentRichTextBox1.TabIndex = 30;
+            this.transparentRichTextBox1.Text = "";
+            // 
             // msgBox
             // 
             this.msgBox.BackColor = System.Drawing.Color.Transparent;
@@ -872,26 +892,6 @@
             this.msgBox.SelectedText = "";
             this.msgBox.Size = new System.Drawing.Size(496, 49);
             this.msgBox.TabIndex = 28;
-            // 
-            // label7
-            // 
-            this.label7.AutoSize = true;
-            this.label7.Font = new System.Drawing.Font("Segoe UI Light", 18F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label7.Location = new System.Drawing.Point(7, 18);
-            this.label7.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
-            this.label7.Name = "label7";
-            this.label7.Size = new System.Drawing.Size(96, 41);
-            this.label7.TabIndex = 24;
-            this.label7.Text = "Shape";
-            // 
-            // transparentRichTextBox1
-            // 
-            this.transparentRichTextBox1.BorderStyle = System.Windows.Forms.BorderStyle.None;
-            this.transparentRichTextBox1.Location = new System.Drawing.Point(12, 5);
-            this.transparentRichTextBox1.Name = "transparentRichTextBox1";
-            this.transparentRichTextBox1.Size = new System.Drawing.Size(468, 356);
-            this.transparentRichTextBox1.TabIndex = 30;
-            this.transparentRichTextBox1.Text = "";
             // 
             // Form1
             // 
