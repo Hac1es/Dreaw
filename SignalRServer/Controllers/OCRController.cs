@@ -8,10 +8,6 @@ namespace Server.Controllers
     [Route("api/ocr")]
     public class OCRController : ControllerBase
     {
-        private static readonly ConcurrentQueue<Request>
-        public IActionResult Index()
-        {
-            return View();
-        }
+       
     }
 }

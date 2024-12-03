@@ -18,10 +18,7 @@ namespace Server.Controllers
         {
             Env.Load();
             key = Env.GetString("SECRET_KEY");
-            aes = new AES_things(key);
         }
-
-        private readonly AES_things aes;
 
         [HttpPost]
         public IActionResult ValidJWT([FromBody] string jwt)
@@ -31,8 +28,7 @@ namespace Server.Controllers
                 (int code, object? result) = jdt.Decoder(jwt, key);
                 if (code == 200)
                 {
-                    string encrpyted_ep = aes.Encrypt("api/hub");
-                    return Ok(encrpyted_ep);
+                    return Ok();
                 }
                 else if (code == 401)
                 {

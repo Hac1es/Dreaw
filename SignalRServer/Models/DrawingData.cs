@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace DoAnPaint.Utils
+namespace Server.Models
 {
     public class DrawingData
     {
@@ -23,8 +23,7 @@ namespace DoAnPaint.Utils
         RECTANGLE,
         ELLIPSE,
         BEIZER,
-        POLYGON,
-        OCR
+        POLYGON
     }
 
     public enum Cursorr

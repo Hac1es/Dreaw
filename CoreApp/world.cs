@@ -7,6 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using DoAnPaint;
 
 namespace Dreaw
 {
@@ -15,6 +16,12 @@ namespace Dreaw
         public world()
         {
             InitializeComponent();
+        }
+
+        private void pictureBox4_Click(object sender, EventArgs e)
+        {
+            DoAnPaint.Form1 drawingpanel = new DoAnPaint.Form1();
+            drawingpanel.Show();
         }
     }
 }
