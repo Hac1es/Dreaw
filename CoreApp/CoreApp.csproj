@@ -203,5 +203,11 @@
   <ItemGroup>
     <None Include="Resources\wolrd.png" />
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\DoAnPaint\DrawingForm.csproj">
+      <Project>{a793db4d-ccf3-4770-b850-4508d6e540ee}</Project>
+      <Name>DrawingForm</Name>
+    </ProjectReference>
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

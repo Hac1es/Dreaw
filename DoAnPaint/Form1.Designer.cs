@@ -31,11 +31,11 @@
             this.components = new System.ComponentModel.Container();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Form1));
             this.panel1 = new System.Windows.Forms.Panel();
+            this.btnSelect = new System.Windows.Forms.Button();
             this.label5 = new System.Windows.Forms.Label();
             this.pictureBox21 = new System.Windows.Forms.PictureBox();
-            this.btnSelect = new System.Windows.Forms.Button();
             this.label4 = new System.Windows.Forms.Label();
-            this.pictureBox32 = new System.Windows.Forms.PictureBox();
+            this.btnOCR = new System.Windows.Forms.PictureBox();
             this.label3 = new System.Windows.Forms.Label();
             this.label2 = new System.Windows.Forms.Label();
             this.ptbEditColor = new System.Windows.Forms.PictureBox();
@@ -80,17 +80,17 @@
             this.button1 = new System.Windows.Forms.Button();
             this.saveFile = new System.Windows.Forms.SaveFileDialog();
             this.lbLocation = new System.Windows.Forms.Label();
-            this.pictureBox33 = new System.Windows.Forms.PictureBox();
-            this.ptbDrawing = new System.Windows.Forms.PictureBox();
             this.RoomIDShow = new System.Windows.Forms.Label();
             this.label6 = new System.Windows.Forms.Label();
             this.guna2ContextMenuStrip1 = new Guna.UI2.WinForms.Guna2ContextMenuStrip();
             this.chatPanel = new Guna.UI2.WinForms.Guna2CustomGradientPanel();
             this.msgBox = new Guna.UI2.WinForms.Guna2TextBox();
+            this.pictureBox33 = new System.Windows.Forms.PictureBox();
+            this.ptbDrawing = new System.Windows.Forms.PictureBox();
             this.transparentRichTextBox1 = new DoAnPaint.Utils.TransparentRichTextBox();
             this.panel1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox21)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.pictureBox32)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.btnOCR)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.ptbEditColor)).BeginInit();
             this.panel5.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox11)).BeginInit();
@@ -117,9 +117,9 @@
             this.panel4.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.btnLineSize)).BeginInit();
             this.panel3.SuspendLayout();
+            this.chatPanel.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox33)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.ptbDrawing)).BeginInit();
-            this.chatPanel.SuspendLayout();
             this.SuspendLayout();
             // 
             // panel1
@@ -129,7 +129,7 @@
             this.panel1.Controls.Add(this.label5);
             this.panel1.Controls.Add(this.pictureBox21);
             this.panel1.Controls.Add(this.label4);
-            this.panel1.Controls.Add(this.pictureBox32);
+            this.panel1.Controls.Add(this.btnOCR);
             this.panel1.Controls.Add(this.label3);
             this.panel1.Controls.Add(this.label2);
             this.panel1.Controls.Add(this.ptbEditColor);
@@ -145,6 +145,25 @@
             this.panel1.Size = new System.Drawing.Size(1738, 142);
             this.panel1.TabIndex = 17;
             // 
+            // btnSelect
+            // 
+            this.btnSelect.BackColor = System.Drawing.Color.PaleTurquoise;
+            this.btnSelect.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch;
+            this.btnSelect.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.btnSelect.Font = new System.Drawing.Font("Segoe UI Light", 10.2F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.btnSelect.Image = global::DoAnPaint.Properties.Resources.ic_cursor;
+            this.btnSelect.ImageAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            this.btnSelect.Location = new System.Drawing.Point(1204, 44);
+            this.btnSelect.Margin = new System.Windows.Forms.Padding(4);
+            this.btnSelect.Name = "btnSelect";
+            this.btnSelect.Size = new System.Drawing.Size(146, 60);
+            this.btnSelect.TabIndex = 3;
+            this.btnSelect.Text = "Cursor";
+            this.btnSelect.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageBeforeText;
+            this.Tips.SetToolTip(this.btnSelect, "Back to cursor");
+            this.btnSelect.UseVisualStyleBackColor = false;
+            this.btnSelect.Click += new System.EventHandler(this.btnSelect_Click);
+            // 
             // label5
             // 
             this.label5.AutoSize = true;
@@ -159,7 +178,7 @@
             // pictureBox21
             // 
             this.pictureBox21.BackColor = System.Drawing.Color.Transparent;
-            this.pictureBox21.BackgroundImage = ((System.Drawing.Image)(resources.GetObject("pictureBox21.BackgroundImage")));
+            this.pictureBox21.BackgroundImage = global::DoAnPaint.Properties.Resources.save;
             this.pictureBox21.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Zoom;
             this.pictureBox21.Location = new System.Drawing.Point(1647, 15);
             this.pictureBox21.Margin = new System.Windows.Forms.Padding(4);
@@ -168,25 +187,6 @@
             this.pictureBox21.TabIndex = 22;
             this.pictureBox21.TabStop = false;
             this.Tips.SetToolTip(this.pictureBox21, "Save to database");
-            // 
-            // btnSelect
-            // 
-            this.btnSelect.BackColor = System.Drawing.Color.Transparent;
-            this.btnSelect.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch;
-            this.btnSelect.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.btnSelect.Font = new System.Drawing.Font("Segoe UI Light", 10.2F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.btnSelect.Image = ((System.Drawing.Image)(resources.GetObject("btnSelect.Image")));
-            this.btnSelect.ImageAlign = System.Drawing.ContentAlignment.MiddleLeft;
-            this.btnSelect.Location = new System.Drawing.Point(1204, 44);
-            this.btnSelect.Margin = new System.Windows.Forms.Padding(4);
-            this.btnSelect.Name = "btnSelect";
-            this.btnSelect.Size = new System.Drawing.Size(146, 60);
-            this.btnSelect.TabIndex = 3;
-            this.btnSelect.Text = "Cursor";
-            this.btnSelect.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageBeforeText;
-            this.Tips.SetToolTip(this.btnSelect, "Back to cursor");
-            this.btnSelect.UseVisualStyleBackColor = false;
-            this.btnSelect.Click += new System.EventHandler(this.btnSelect_Click);
             // 
             // label4
             // 
@@ -199,18 +199,19 @@
             this.label4.TabIndex = 21;
             this.label4.Text = "Read text";
             // 
-            // pictureBox32
+            // btnOCR
             // 
-            this.pictureBox32.BackColor = System.Drawing.Color.Transparent;
-            this.pictureBox32.BackgroundImage = global::DoAnPaint.Properties.Resources.ic_read;
-            this.pictureBox32.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Zoom;
-            this.pictureBox32.Location = new System.Drawing.Point(1519, 15);
-            this.pictureBox32.Margin = new System.Windows.Forms.Padding(4);
-            this.pictureBox32.Name = "pictureBox32";
-            this.pictureBox32.Size = new System.Drawing.Size(67, 62);
-            this.pictureBox32.TabIndex = 20;
-            this.pictureBox32.TabStop = false;
-            this.Tips.SetToolTip(this.pictureBox32, "Select your handwriting text, then see the magic;))");
+            this.btnOCR.BackColor = System.Drawing.Color.Transparent;
+            this.btnOCR.BackgroundImage = global::DoAnPaint.Properties.Resources.ic_read;
+            this.btnOCR.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Zoom;
+            this.btnOCR.Location = new System.Drawing.Point(1519, 15);
+            this.btnOCR.Margin = new System.Windows.Forms.Padding(4);
+            this.btnOCR.Name = "btnOCR";
+            this.btnOCR.Size = new System.Drawing.Size(67, 62);
+            this.btnOCR.TabIndex = 20;
+            this.btnOCR.TabStop = false;
+            this.Tips.SetToolTip(this.btnOCR, "Select your handwriting text, then see the magic;))");
+            this.btnOCR.Click += new System.EventHandler(this.btnOCR_Click);
             // 
             // label3
             // 
@@ -587,7 +588,7 @@
             this.btnClear.Name = "btnClear";
             this.btnClear.Size = new System.Drawing.Size(53, 49);
             this.btnClear.TabIndex = 3;
-            this.Tips.SetToolTip(this.btnClear, "Clear canvas");
+            this.Tips.SetToolTip(this.btnClear, "Clear");
             this.btnClear.UseVisualStyleBackColor = false;
             this.btnClear.Click += new System.EventHandler(this.btnClear_Click);
             // 
@@ -609,10 +610,12 @@
             // 
             this.btnLineSize.Location = new System.Drawing.Point(531, 21);
             this.btnLineSize.Margin = new System.Windows.Forms.Padding(4);
+            this.btnLineSize.Minimum = 1;
             this.btnLineSize.Name = "btnLineSize";
             this.btnLineSize.Size = new System.Drawing.Size(133, 56);
             this.btnLineSize.TabIndex = 15;
             this.Tips.SetToolTip(this.btnLineSize, "Pen/Border size");
+            this.btnLineSize.Value = 2;
             this.btnLineSize.Scroll += new System.EventHandler(this.btnLineSize_Scroll);
             // 
             // panel3
@@ -766,33 +769,6 @@
             this.lbLocation.TabIndex = 19;
             this.lbLocation.Text = "0:0";
             // 
-            // pictureBox33
-            // 
-            this.pictureBox33.BackColor = System.Drawing.Color.Transparent;
-            this.pictureBox33.BackgroundImage = global::DoAnPaint.Properties.Resources.ic_location;
-            this.pictureBox33.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch;
-            this.pictureBox33.Location = new System.Drawing.Point(18, 776);
-            this.pictureBox33.Margin = new System.Windows.Forms.Padding(4);
-            this.pictureBox33.Name = "pictureBox33";
-            this.pictureBox33.Size = new System.Drawing.Size(24, 22);
-            this.pictureBox33.TabIndex = 20;
-            this.pictureBox33.TabStop = false;
-            // 
-            // ptbDrawing
-            // 
-            this.ptbDrawing.BackColor = System.Drawing.Color.White;
-            this.ptbDrawing.Location = new System.Drawing.Point(15, 189);
-            this.ptbDrawing.Margin = new System.Windows.Forms.Padding(4);
-            this.ptbDrawing.Name = "ptbDrawing";
-            this.ptbDrawing.Size = new System.Drawing.Size(1738, 583);
-            this.ptbDrawing.TabIndex = 2;
-            this.ptbDrawing.TabStop = false;
-            this.ptbDrawing.Paint += new System.Windows.Forms.PaintEventHandler(this.onPaint_Event);
-            this.ptbDrawing.MouseClick += new System.Windows.Forms.MouseEventHandler(this.ptbDrawing_MouseClick);
-            this.ptbDrawing.MouseDown += new System.Windows.Forms.MouseEventHandler(this.mouseDown_Event);
-            this.ptbDrawing.MouseMove += new System.Windows.Forms.MouseEventHandler(this.mouseMove_Event);
-            this.ptbDrawing.MouseUp += new System.Windows.Forms.MouseEventHandler(this.mouseUp_Event);
-            // 
             // RoomIDShow
             // 
             this.RoomIDShow.AutoSize = true;
@@ -873,6 +849,35 @@
             this.msgBox.Size = new System.Drawing.Size(496, 49);
             this.msgBox.TabIndex = 28;
             // 
+            // pictureBox33
+            // 
+            this.pictureBox33.BackColor = System.Drawing.Color.Transparent;
+            this.pictureBox33.BackgroundImage = global::DoAnPaint.Properties.Resources.ic_location;
+            this.pictureBox33.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch;
+            this.pictureBox33.Location = new System.Drawing.Point(18, 776);
+            this.pictureBox33.Margin = new System.Windows.Forms.Padding(4);
+            this.pictureBox33.Name = "pictureBox33";
+            this.pictureBox33.Size = new System.Drawing.Size(24, 22);
+            this.pictureBox33.TabIndex = 20;
+            this.pictureBox33.TabStop = false;
+            // 
+            // ptbDrawing
+            // 
+            this.ptbDrawing.BackColor = System.Drawing.Color.White;
+            this.ptbDrawing.Cursor = System.Windows.Forms.Cursors.NoMove2D;
+            this.ptbDrawing.Location = new System.Drawing.Point(15, 189);
+            this.ptbDrawing.Margin = new System.Windows.Forms.Padding(4);
+            this.ptbDrawing.Name = "ptbDrawing";
+            this.ptbDrawing.Size = new System.Drawing.Size(1738, 583);
+            this.ptbDrawing.TabIndex = 2;
+            this.ptbDrawing.TabStop = false;
+            this.ptbDrawing.Paint += new System.Windows.Forms.PaintEventHandler(this.onPaint_Event);
+            this.ptbDrawing.MouseClick += new System.Windows.Forms.MouseEventHandler(this.ptbDrawing_MouseClick);
+            this.ptbDrawing.MouseDoubleClick += new System.Windows.Forms.MouseEventHandler(this.ptbDrawing_MouseDoubleClick);
+            this.ptbDrawing.MouseDown += new System.Windows.Forms.MouseEventHandler(this.mouseDown_Event);
+            this.ptbDrawing.MouseMove += new System.Windows.Forms.MouseEventHandler(this.mouseMove_Event);
+            this.ptbDrawing.MouseUp += new System.Windows.Forms.MouseEventHandler(this.mouseUp_Event);
+            // 
             // transparentRichTextBox1
             // 
             this.transparentRichTextBox1.BorderStyle = System.Windows.Forms.BorderStyle.None;
@@ -896,6 +901,7 @@
             this.Controls.Add(this.panel1);
             this.Controls.Add(this.ptbDrawing);
             this.Controls.Add(this.button1);
+            this.Cursor = System.Windows.Forms.Cursors.Default;
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.None;
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.KeyPreview = true;
@@ -907,7 +913,7 @@
             this.panel1.ResumeLayout(false);
             this.panel1.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox21)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.pictureBox32)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.btnOCR)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.ptbEditColor)).EndInit();
             this.panel5.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox11)).EndInit();
@@ -935,9 +941,9 @@
             ((System.ComponentModel.ISupportInitialize)(this.btnLineSize)).EndInit();
             this.panel3.ResumeLayout(false);
             this.panel3.PerformLayout();
+            this.chatPanel.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox33)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.ptbDrawing)).EndInit();
-            this.chatPanel.ResumeLayout(false);
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -987,7 +993,7 @@
         private System.Windows.Forms.Button btnClear;
         private System.Windows.Forms.Button btnSave;
         private System.Windows.Forms.Label label4;
-        private System.Windows.Forms.PictureBox pictureBox32;
+        private System.Windows.Forms.PictureBox btnOCR;
         private System.Windows.Forms.ToolTip Tips;
         private System.Windows.Forms.SaveFileDialog saveFile;
         private System.Windows.Forms.Label lbLocation;

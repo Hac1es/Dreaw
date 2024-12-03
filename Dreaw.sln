@@ -10,6 +10,9 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Server", "SignalRServer\Server.csproj", "{4768038E-C951-4DDA-84B0-CB2BCBD9DF8F}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CoreApp", "CoreApp\CoreApp.csproj", "{58130AE4-34C2-4194-AD0A-7C6ED18B35AB}"
+	ProjectSection(ProjectDependencies) = postProject
+		{A793DB4D-CCF3-4770-B850-4508D6E540EE} = {A793DB4D-CCF3-4770-B850-4508D6E540EE}
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

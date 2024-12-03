@@ -407,6 +407,13 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="ILLink\ILLink.Descriptors.LibraryBuild.xml" />
+    <Content Include="Resources\Eraser.png" />
+    <Content Include="Resources\Fill Color.png" />
+    <Content Include="Resources\ic_cursor.png" />
+    <Content Include="Resources\ic_logout.png" />
+    <Content Include="Resources\ic_read.png" />
+    <Content Include="Resources\Pencil.png" />
+    <Content Include="Resources\save.png" />
   </ItemGroup>
   <ItemGroup>
     <BootstrapperPackage Include=".NETFramework,Version=v4.8">
