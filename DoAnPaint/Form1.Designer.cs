@@ -81,18 +81,17 @@
             this.btnPolygon = new System.Windows.Forms.Button();
             this.Tips = new System.Windows.Forms.ToolTip(this.components);
             this.button1 = new System.Windows.Forms.Button();
-            this.saveFile = new System.Windows.Forms.SaveFileDialog();
             this.lbLocation = new System.Windows.Forms.Label();
             this.RoomIDShow = new System.Windows.Forms.Label();
             this.label6 = new System.Windows.Forms.Label();
             this.guna2ContextMenuStrip1 = new Guna.UI2.WinForms.Guna2ContextMenuStrip();
             this.chatPanel = new Guna.UI2.WinForms.Guna2CustomGradientPanel();
+            this.transparentRichTextBox1 = new DoAnPaint.Utils.TransparentRichTextBox();
             this.msgBox = new Guna.UI2.WinForms.Guna2TextBox();
             this.splitter2 = new System.Windows.Forms.Splitter();
             this.pictureBox33 = new System.Windows.Forms.PictureBox();
             this.ptbDrawing = new System.Windows.Forms.PictureBox();
             this.Status = new System.Windows.Forms.Label();
-            this.transparentRichTextBox1 = new DoAnPaint.Utils.TransparentRichTextBox();
             this.panel1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox21)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.btnOCR)).BeginInit();
@@ -804,7 +803,7 @@
             // 
             this.lbLocation.AutoSize = true;
             this.lbLocation.ForeColor = System.Drawing.Color.White;
-            this.lbLocation.Location = new System.Drawing.Point(49, 783);
+            this.lbLocation.Location = new System.Drawing.Point(56, 976);
             this.lbLocation.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.lbLocation.Name = "lbLocation";
             this.lbLocation.Size = new System.Drawing.Size(24, 16);
@@ -828,7 +827,7 @@
             this.label6.AutoSize = true;
             this.label6.Font = new System.Drawing.Font("Segoe UI Light", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.label6.ForeColor = System.Drawing.Color.White;
-            this.label6.Location = new System.Drawing.Point(1642, 776);
+            this.label6.Location = new System.Drawing.Point(1651, 967);
             this.label6.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.label6.Name = "label6";
             this.label6.Size = new System.Drawing.Size(102, 28);
@@ -854,12 +853,21 @@
             // 
             this.chatPanel.Controls.Add(this.transparentRichTextBox1);
             this.chatPanel.Controls.Add(this.msgBox);
-            this.chatPanel.Location = new System.Drawing.Point(16, 343);
+            this.chatPanel.Location = new System.Drawing.Point(16, 532);
             this.chatPanel.Name = "chatPanel";
             this.chatPanel.Size = new System.Drawing.Size(494, 410);
             this.chatPanel.TabIndex = 28;
             this.chatPanel.Visible = false;
             this.chatPanel.Paint += new System.Windows.Forms.PaintEventHandler(this.chatPanel_Paint);
+            // 
+            // transparentRichTextBox1
+            // 
+            this.transparentRichTextBox1.BorderStyle = System.Windows.Forms.BorderStyle.None;
+            this.transparentRichTextBox1.Location = new System.Drawing.Point(12, 5);
+            this.transparentRichTextBox1.Name = "transparentRichTextBox1";
+            this.transparentRichTextBox1.Size = new System.Drawing.Size(468, 356);
+            this.transparentRichTextBox1.TabIndex = 30;
+            this.transparentRichTextBox1.Text = "";
             // 
             // msgBox
             // 
@@ -895,7 +903,7 @@
             // 
             this.splitter2.Location = new System.Drawing.Point(0, 0);
             this.splitter2.Name = "splitter2";
-            this.splitter2.Size = new System.Drawing.Size(3, 811);
+            this.splitter2.Size = new System.Drawing.Size(3, 1001);
             this.splitter2.TabIndex = 29;
             this.splitter2.TabStop = false;
             // 
@@ -904,7 +912,7 @@
             this.pictureBox33.BackColor = System.Drawing.Color.Transparent;
             this.pictureBox33.BackgroundImage = global::DoAnPaint.Properties.Resources.ic_location;
             this.pictureBox33.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch;
-            this.pictureBox33.Location = new System.Drawing.Point(18, 776);
+            this.pictureBox33.Location = new System.Drawing.Point(25, 969);
             this.pictureBox33.Margin = new System.Windows.Forms.Padding(4);
             this.pictureBox33.Name = "pictureBox33";
             this.pictureBox33.Size = new System.Drawing.Size(24, 22);
@@ -918,7 +926,7 @@
             this.ptbDrawing.Location = new System.Drawing.Point(15, 189);
             this.ptbDrawing.Margin = new System.Windows.Forms.Padding(4);
             this.ptbDrawing.Name = "ptbDrawing";
-            this.ptbDrawing.Size = new System.Drawing.Size(1738, 583);
+            this.ptbDrawing.Size = new System.Drawing.Size(1738, 772);
             this.ptbDrawing.TabIndex = 2;
             this.ptbDrawing.TabStop = false;
             this.ptbDrawing.Paint += new System.Windows.Forms.PaintEventHandler(this.onPaint_Event);
@@ -931,30 +939,21 @@
             // Status
             // 
             this.Status.AutoSize = true;
-            this.Status.Font = new System.Drawing.Font("Segoe UI Semilight", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.Status.Font = new System.Drawing.Font("Segoe UI Semilight", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(163)));
             this.Status.ForeColor = System.Drawing.Color.White;
-            this.Status.Location = new System.Drawing.Point(81, 774);
+            this.Status.Location = new System.Drawing.Point(147, 974);
             this.Status.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.Status.Name = "Status";
-            this.Status.Size = new System.Drawing.Size(68, 28);
+            this.Status.Size = new System.Drawing.Size(51, 20);
             this.Status.TabIndex = 30;
             this.Status.Text = "Cursor";
-            // 
-            // transparentRichTextBox1
-            // 
-            this.transparentRichTextBox1.BorderStyle = System.Windows.Forms.BorderStyle.None;
-            this.transparentRichTextBox1.Location = new System.Drawing.Point(12, 5);
-            this.transparentRichTextBox1.Name = "transparentRichTextBox1";
-            this.transparentRichTextBox1.Size = new System.Drawing.Size(468, 356);
-            this.transparentRichTextBox1.TabIndex = 30;
-            this.transparentRichTextBox1.Text = "";
             // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
-            this.ClientSize = new System.Drawing.Size(1766, 811);
+            this.ClientSize = new System.Drawing.Size(1766, 1001);
             this.Controls.Add(this.Status);
             this.Controls.Add(this.splitter2);
             this.Controls.Add(this.chatPanel);
@@ -1059,7 +1058,6 @@
         private System.Windows.Forms.Label label4;
         private System.Windows.Forms.PictureBox btnOCR;
         private System.Windows.Forms.ToolTip Tips;
-        private System.Windows.Forms.SaveFileDialog saveFile;
         private System.Windows.Forms.Label lbLocation;
         private System.Windows.Forms.PictureBox pictureBox33;
         private System.Windows.Forms.Label RoomIDShow;

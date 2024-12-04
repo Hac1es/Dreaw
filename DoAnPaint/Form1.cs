@@ -25,12 +25,15 @@ using System.Windows.Media;
 using Pen = System.Drawing.Pen;
 using Color = System.Drawing.Color;
 using DashStyle = System.Drawing.Drawing2D.DashStyle;
+using System.Windows.Media.Media3D;
+using Brush = System.Drawing.Brush;
+using System.Configuration;
+using System.Drawing.Imaging;
 
 namespace DoAnPaint
 {
     public partial class Form1 : Form
     {
-        #region Fields //Thuộc tính
         private static string Capitalize(string input)
         {
             if (string.IsNullOrEmpty(input))
@@ -38,6 +41,7 @@ namespace DoAnPaint
 
             return char.ToUpper(input[0]) + input.Substring(1).ToLower();
         }
+        #region Fields
         private Graphics gr; //Graphic chính của Form vẽ
         private Bitmap bmp; //Bitmap để vẽ lệnh
         private Command command; //Danh sách các lệnh(không dùng cái này, ta sẽ dùng property của nó)
@@ -45,11 +49,11 @@ namespace DoAnPaint
         bool isPainting = false; //Có đang sử dụng tính năng không? 
         bool isDragging = false;
         /* 
-            List BezierPoint là hàng thật, thứ sẽ hiện thị lên canvas
-            List TempBezierPoint chỉ là preview, cập nhật liên tục theo vị trí chuột
+            List Points là hàng thật, thứ sẽ hiện thị lên canvas
+            List TempPoints chỉ là preview, cập nhật liên tục theo vị trí chuột
          */
-        List<Point> BezierPoint = new List<Point>();
-        List<Point> TempBezierPoint = new List<Point>();
+        List<Point> Points = new List<Point>();
+        List<Point> TempPoints = new List<Point>();
         Point pointX, pointY; //Dùng trong tính năng phải cập nhật vị trí liên tục(pen, eraser, crayon)
         int x, y, sX, sY, cX, cY;
         /* 
@@ -163,6 +167,22 @@ namespace DoAnPaint
         {
             GraphicsPath path = new GraphicsPath();
             path.AddCurve(points.ToArray());
+            return path;
+        }
+        /// <summary>
+        /// Tạo ra đường đi của polygon(đa giác)
+        /// </summary>
+        public GraphicsPath PolygonPath(List<Point> points)
+        {
+            GraphicsPath path = new GraphicsPath();
+            if (points.Count < 3)
+            {
+                path.AddLine(points[0], points[1]);
+            }
+            else
+            {
+                path.AddPolygon(points.ToArray());
+            }
             return path;
         }
         /// <summary>
@@ -367,7 +387,7 @@ namespace DoAnPaint
         //Sự kiện ấn chuột xuống
         private void mouseDown_Event(object sender, MouseEventArgs e)
         {
-            if (Cmd != Command.BEIZER && Cmd != Command.CURSOR) isPainting = true;
+            if (Cmd != Command.BEIZER && Cmd != Command.CURSOR && Cmd != Command.POLYGON) isPainting = true;
             else if (Cmd == Command.CURSOR)
             {
                 isDragging = true;
@@ -406,15 +426,15 @@ namespace DoAnPaint
                     gr.DrawLine(pen, pointX, pointY);
                 pointX = pointY;
             }
-            if (Cmd == Command.BEIZER)
+            if (Cmd == Command.BEIZER || Cmd == Command.POLYGON)
             {
-                if (TempBezierPoint.Count > BezierPoint.Count)
+                if (TempPoints.Count > Points.Count)
                 {
-                    TempBezierPoint[TempBezierPoint.Count - 1] = e.Location;
+                    TempPoints[TempPoints.Count - 1] = e.Location;
                 }
                 else
                 {
-                    TempBezierPoint.Add(e.Location);
+                    TempPoints.Add(e.Location);
                 }
             }
             x = e.X;
@@ -423,7 +443,7 @@ namespace DoAnPaint
             sY = Math.Abs(e.Y - cY);
             if (Cmd == Command.CURSOR && isDragging == true)
             {
-                selected = new Rectangle(cX, cY, sX, sY);
+                selected = new Rectangle(Math.Min(cX, x), Math.Min(cY, y), sX, sY);
             }    
             ptbDrawing.Invalidate();
         }
@@ -444,17 +464,22 @@ namespace DoAnPaint
                     }
                     if (Cmd == Command.RECTANGLE)
                     {
-                        paint_gr.DrawRectangle(pen, cX, cY, sX, sY);
+                        paint_gr.DrawRectangle(pen, Math.Min(cX, x), Math.Min(cY, y), sX, sY);
                     }
                     if (Cmd == Command.ELLIPSE)
                     {
-                        paint_gr.DrawEllipse(pen, cX, cY, sX, sY);
+                        paint_gr.DrawEllipse(pen, Math.Min(cX, x), Math.Min(cY, y), sX, sY);
                     }
                     if (Cmd == Command.BEIZER)
                     {
-                        if (TempBezierPoint.Count > 1)
-                            paint_gr.DrawPath(pen, CurvedPath(TempBezierPoint));
-                    }   
+                        if (TempPoints.Count > 1)
+                            paint_gr.DrawPath(pen, CurvedPath(TempPoints));
+                    }
+                    if (Cmd == Command.POLYGON)
+                    {
+                        if (TempPoints.Count > 1)
+                            paint_gr.DrawPath(pen, PolygonPath(TempPoints));
+                    }    
                 }  
             }
             if (Cmd == Command.CURSOR && isDragging == true)
@@ -482,10 +507,10 @@ namespace DoAnPaint
         //Sự kiện thả chuột
         private void mouseUp_Event(object sender, MouseEventArgs e)
         {
-            if (Cmd != Command.BEIZER) isPainting = false;
+            if (Cmd != Command.BEIZER && Cmd != Command.POLYGON) isPainting = false;
             if (Cmd == Command.CURSOR) isDragging = false;
-            sX = x - cX;
-            sY = y - cY;
+            sX = Math.Abs(e.X - cX);
+            sY = Math.Abs(e.Y - cY);
             using (Pen pen = new Pen(color, width))
             {
                 if (Cmd == Command.LINE)
@@ -494,11 +519,11 @@ namespace DoAnPaint
                 }
                 if (Cmd == Command.RECTANGLE)
                 {
-                    gr.DrawRectangle(pen, cX, cY, sX, sY);
+                    gr.DrawRectangle(pen, Math.Min(cX, x), Math.Min(cY, y), sX, sY);
                 }
                 if (Cmd == Command.ELLIPSE)
                 {
-                    gr.DrawEllipse(pen, cX, cY, sX, sY);
+                    gr.DrawEllipse(pen, Math.Min(cX, x), Math.Min(cY, y), sX, sY);
                 }
             }    
             ptbDrawing.Invalidate();
@@ -524,16 +549,16 @@ namespace DoAnPaint
             switch (cursor)
             {
                 case Cursorr.PENCIL:
-                    where = string.Format(template, "Pencil.png");
+                    where = Cmd == Command.PENCIL ? string.Format(template, "Pencil.png") : "-1";
                     break;
                 case Cursorr.ERASER:
-                    where = string.Format(template, "Eraser.png");
+                    where = Cmd == Command.ERASER ? string.Format(template, "Eraser.png") : "-1";
                     break;
                 case Cursorr.FILL:
-                    where = string.Format(template, "Fill Color.png");
+                    where = Cmd == Command.FILL ? string.Format(template, "Fill Color.png") : "-1";
                     break;
                 case Cursorr.CRAYON:
-                    where = string.Format(template, "CrayonCursor.png");
+                    where = Cmd == Command.CRAYON ? string.Format(template, "CrayonCursor.png") : "-1";
                     break;
                 default:
                     where = null;
@@ -541,6 +566,7 @@ namespace DoAnPaint
             }
             if (where != null)
             {
+                if (where == "-1") return;
                 using (Bitmap bitmap = new Bitmap(where))
                 {
                     IntPtr hIcon = bitmap.GetHicon();
@@ -581,15 +607,15 @@ namespace DoAnPaint
         //Shin cậu bé bút chì
         private void btnPen_Click(object sender, EventArgs e)
         {
-            setCursor(Cursorr.PENCIL);
             Cmd = Command.PENCIL;
+            setCursor(Cursorr.PENCIL);
         }
 
         //Gôm
         private void btnEraser_Click(object sender, EventArgs e)
         {
-            setCursor(Cursorr.ERASER);
             Cmd = Command.ERASER;
+            setCursor(Cursorr.ERASER);
         }
 
         //Custom màu
@@ -606,7 +632,7 @@ namespace DoAnPaint
         private void btnLineSize_Scroll(object sender, EventArgs e)
         {
             TrackBar trackBar = sender as TrackBar;
-            if (Cmd == Command.CRAYON || Cmd == Command.ERASER)
+            if (Cmd == Command.CRAYON || Cmd == Command.ERASER) //Nếu dùng crayon hay eraser
             {
                 // Nếu giá trị là lẻ, cộng thêm 1 để làm tròn
                 if (trackBar.Value % 2 != 0)
@@ -634,46 +660,59 @@ namespace DoAnPaint
                 FillUp(bmp, point.X, point.Y, color);
                 ptbDrawing.Invalidate();
             }
-            if (Cmd == Command.BEIZER)
+            if (Cmd == Command.BEIZER || Cmd == Command.POLYGON)
             {
                 if (e.Button == MouseButtons.Left)
                 {
                     if (!isPainting)
                     {
                         isPainting = true;
-                        BezierPoint.Add(e.Location);
-                        TempBezierPoint = BezierPoint.ToList();
+                        Points.Add(e.Location);
+                        TempPoints = Points.ToList();
                     }
                     else
                     {
-                        BezierPoint.Add(e.Location);
-                        TempBezierPoint = BezierPoint.ToList();
+                        Points.Add(e.Location);
+                        TempPoints = Points.ToList();
                     }     
                 }
-                else if (BezierPoint.Any() && isPainting)
+                else if (Points.Any() && isPainting)
                 {
-                    BezierPoint.Add(e.Location);
+                    Points.Add(e.Location);
                     using (Pen pen = new Pen(color, width))
-                        gr.DrawPath(pen, CurvedPath(BezierPoint));
-                    BezierPoint.Clear();
-                    TempBezierPoint.Clear();
+                    {
+                        var path = Cmd == Command.BEIZER? CurvedPath(Points) : PolygonPath(Points);
+                        gr.DrawPath(pen, path);
+                    } 
+                    Points.Clear();
+                    TempPoints.Clear();
                     isPainting = false;
                 }
-            }    
+            } 
         }
 
         //Xóa vùng được chọn
         private void btnClear_Click(object sender, EventArgs e)
         {
-            gr.Clear(Color.White);
+            if (selected != Rectangle.Empty) //Nếu đã chọn vùng
+            {
+                using (Brush whiteBrush = new SolidBrush(Color.White)) // Tạo bút vẽ màu trắng
+                {
+                    gr.FillRectangle(whiteBrush, selected); // Fill màu trắng vào hình chữ nhật
+                }
+            }
+            else //Xóa hết
+            {
+                gr.Clear(Color.White);
+            }
             ptbDrawing.Invalidate();
         }
 
         //Fill màu
         private void btnFill_Click(object sender, EventArgs e)
         {
-            setCursor(Cursorr.FILL);
             Cmd = Command.FILL;
+            setCursor(Cursorr.FILL);
         }
 
         //Ma thuật đen(Đọc chữ)
@@ -681,6 +720,11 @@ namespace DoAnPaint
         {
             setCursor(Cursorr.NONE);
             Cmd = Command.OCR;
+            if (selected == Rectangle.Empty) {
+                MessageBox.Show("Selected something first!");
+                return;
+            }
+            var croped = bmp.Clone(selected, bmp.PixelFormat);
         }
 
         //Sự kiện double click
@@ -694,8 +738,8 @@ namespace DoAnPaint
         //Crayon Shin-chan
         private void btnCrayon_Click(object sender, EventArgs e)
         {
-            setCursor(Cursorr.CRAYON);
             Cmd = Command.CRAYON;
+            setCursor(Cursorr.CRAYON);
         }
 
         //Này không quan trọng lắm kệ đi
@@ -707,7 +751,14 @@ namespace DoAnPaint
         //Lưu bức vẽ về máy
         private void btnSave_Click(object sender, EventArgs e)
         {
-
+            var save = new SaveFileDialog();
+            save.Filter = "Image(*.jpg) |*.jpg|(*.*)|*.*";
+            if (save.ShowDialog() == DialogResult.OK)
+            {
+                Bitmap savebmp = bmp.Clone(new Rectangle(0, 0, ptbDrawing.Width, ptbDrawing.Height), bmp.PixelFormat);
+                savebmp.Save(save.FileName, ImageFormat.Jpeg);
+            } 
+                
         }
 
         //Logout
