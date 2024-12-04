@@ -17,6 +17,7 @@ namespace DoAnPaint.Utils
         END,
         SYNC,
         PENCIL,
+        CRAYON,
         ERASER,
         FILL,
         LINE,
@@ -31,6 +32,7 @@ namespace DoAnPaint.Utils
     {
         NONE,
         PENCIL,
+        CRAYON,
         ERASER,
         FILL
     }
