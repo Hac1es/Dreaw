@@ -679,6 +679,24 @@ namespace DoAnPaint
                 else if (Points.Any() && isPainting)
                 {
                     Points.Add(e.Location);
+
+                    // Kiểm tra nếu số lượng điểm < 3, hiển thị cảnh báo
+                    if (Points.Count < 3 && Cmd == Command.POLYGON)
+                    {
+                        MessageBox.Show("Để vẽ polygon, bạn cần ít nhất 3 điểm.", "Cảnh báo", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                        Points.Clear();
+                        TempPoints.Clear();
+                        isPainting = false;
+                        return; // Dừng việc vẽ nếu không đủ điểm
+                    } else if (Points.Count < 3 && Cmd == Command.BEIZER)
+                    {
+                        MessageBox.Show("Để vẽ đường cong Bezier, bạn cần ít nhất 3 điểm.", "Cảnh báo", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                        Points.Clear();
+                        TempPoints.Clear();
+                        isPainting = false;
+                        return; // Dừng việc vẽ nếu không đủ điểm
+                    }
+
                     using (Pen pen = new Pen(color, width))
                     {
                         var path = Cmd == Command.BEIZER? CurvedPath(Points) : PolygonPath(Points);
