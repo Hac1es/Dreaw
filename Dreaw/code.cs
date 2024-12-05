@@ -35,7 +35,7 @@ namespace Dreaw
                 MessageBox.Show("Invalid verification code!", "Error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }
-            // Khởi tạo và mở Form2
+            // Khởi tạo và mở Form2.
             newpw newForm = new newpw();
             newForm.Show();
             this.Hide();
