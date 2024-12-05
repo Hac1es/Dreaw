@@ -74,13 +74,13 @@ namespace Dreaw
         {
             SmtpClient smtp = new SmtpClient("smtp.gmail.com", 587)
             {
-                Credentials = new NetworkCredential("thienlt.h.2023@gmail.com", "iyrsitfgmbbphfho"),
+                Credentials = new NetworkCredential("23521458@gm.uit.edu.vn", "echenqlyqkecumoq"),
                 EnableSsl = true
             };
 
             MailMessage mail = new MailMessage
             {
-                From = new MailAddress("thienlt.h.2023@gmail.com"),
+                From = new MailAddress("23521458@gm.uit.edu.vn"),
                 Subject = "Password Reset Code",
                 Body = $"Your password reset code is: {verificationCode}",
                 IsBodyHtml = true
