@@ -14,10 +14,12 @@ namespace Dreaw
     public partial class code : Form
     {
         private string _verificationCode;
-        public code(string verificationCode)
+        private string _userEmail;
+        public code(string verificationCode, string userEmail)
         {
             InitializeComponent();
             _verificationCode = verificationCode;
+            _userEmail = userEmail;
         }
 
         private void pictureBox3_Click(object sender, EventArgs e)
@@ -36,7 +38,7 @@ namespace Dreaw
                 return;
             }
             // Khởi tạo và mở Form2.
-            newpw newForm = new newpw();
+            newpw newForm = new newpw(_userEmail);
             newForm.Show();
             this.Hide();
         }

@@ -49,6 +49,11 @@ namespace Dreaw
                 MessageBox.Show("Please enter email and password!", "Error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }
+            if (!IsValidEmail(email))
+            {
+                MessageBox.Show("Invalid email format!", "Error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
 
             try
             {
@@ -67,6 +72,9 @@ namespace Dreaw
                         {
                             MessageBox.Show("Sign In Successful!", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
                             // Add code to redirect user to the next form or dashboard
+                            world newForm = new world();
+                            newForm.Show();
+                            this.Hide();
                         }
                         else
                         {

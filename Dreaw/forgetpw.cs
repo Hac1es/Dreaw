@@ -46,7 +46,7 @@ namespace Dreaw
 
                 // Điều hướng sang form xác thực
                 // Khởi tạo và mở Form2
-                code newForm = new code(verificationCode );
+                code newForm = new code(verificationCode, email);
                 newForm.Show();
                 this.Hide();
             }
