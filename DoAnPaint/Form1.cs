@@ -706,7 +706,7 @@ namespace DoAnPaint
                     TempPoints.Clear();
                     isPainting = false;
                 }
-            } 
+            }   
         }
 
         //Xóa vùng được chọn
