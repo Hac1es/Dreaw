@@ -792,15 +792,25 @@ namespace DoAnPaint
                 else if (Points.Any() && isPainting)
                 {
                     Points.Add(GetSKPoint(e.Location));
-                    using (var pen = new SKPaint { Color = color, Style = SKPaintStyle.Stroke, StrokeWidth = width, IsAntialias = true })
+                    if (Points.Count < 3)
                     {
-                        var path = Cmd == Command.CURVE ? CurvedPath(Points) : PolygonPath(Points);
-                        gr.DrawPath(path, pen);
+                        ShowNoti(this, "error", "You need at least 3 points!");
+                        Points.Clear();
+                        TempPoints.Clear();
+                        isPainting = false;
                     }
-                    Points.Clear();
-                    TempPoints.Clear();
-                    isPainting = false;
-                    ptbDrawing.Invalidate(); // Yêu cầu vẽ lại
+                    else
+                    {
+                        using (var pen = new SKPaint { Color = color, Style = SKPaintStyle.Stroke, StrokeWidth = width, IsAntialias = true })
+                        {
+                            var path = Cmd == Command.CURVE ? CurvedPath(Points) : PolygonPath(Points);
+                            gr.DrawPath(path, pen);
+                        }
+                        Points.Clear();
+                        TempPoints.Clear();
+                        isPainting = false;
+                        ptbDrawing.Invalidate(); // Yêu cầu vẽ lại
+                    }
                 }
             }
         }
@@ -810,11 +820,6 @@ namespace DoAnPaint
             if (Cmd != Command.CURSOR) return;
             SKColor pixelColor = bmp.GetPixel(e.X, e.Y);
             color = pixelColor == new SKColor(0, 0, 0, 0) ? SKColors.White : pixelColor;
-        }
-
-        private void notiTick_Tick(object sender, EventArgs e)
-        {
-
         }
 
         //Crayon Shin-chan
