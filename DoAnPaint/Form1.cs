@@ -660,6 +660,7 @@ namespace DoAnPaint
                 FillUp(bmp, point.X, point.Y, color);
                 ptbDrawing.Invalidate();
             }
+            // cảnh bảo người dùng nếu thiếu điểm tạo nên polygon/curve
             if (Cmd == Command.BEIZER || Cmd == Command.POLYGON)
             {
                 if (e.Button == MouseButtons.Left)
