@@ -25,6 +25,7 @@ using System.Reflection;
 using SkiaSharp.Views.Desktop;
 using System.Web;
 using System.Threading;
+using System.Runtime.CompilerServices;
 
 namespace DoAnPaint
 {
@@ -63,15 +64,28 @@ namespace DoAnPaint
         {
             return new SKPoint((int)(point.X), (int)(point.Y));
         }
+        /// <param name="form">Form gọi ra noti này(this)</param>
+        /// <param name="what">Thông báo gì: ok, error, warning, khác</param>
+        /// <param name="msg">Tin nhắn cần hiện thị</param>
+        /// <param name="flag">Có tự động đóng không?</param>
+        private static void ShowNoti(Form form, string what, string msg, bool flag = true)
+        {
+            PopupNoti noti;
+            if (flag == true)
+                noti = new PopupNoti(form, what, msg);
+            else
+                noti = new PopupNoti(form, what, msg, false);
+            noti.StartPosition = FormStartPosition.Manual;
+            noti.Location = noti.position;
+            noti.Show();
+        }
         #endregion
 
         #region Fields
-        private SKBitmap bmp;
+        private SKBitmap bmp; //Bitmap để vẽ
         private SKCanvas gr; //Graphic chính của Form vẽ
-        private SKSurface sf; //Bitmap để vẽ lệnh
         private Command command; //Danh sách các lệnh(không dùng cái này, ta sẽ dùng property của nó)
         private SKColor colorr; //Màu(không dùng cái này, ta sẽ dùng property của nó)
-        bool tracking = false; //Có cần theo dõi vị trí chuột không?
         bool isPainting = false; //Có đang sử dụng tính năng không? 
         bool isDragging = false;
         /* 
@@ -90,7 +104,6 @@ namespace DoAnPaint
          */
         int width = 2; //Độ dày khởi đầu nét bút
         SKRect selected = SKRect.Empty; //Khởi đầu cho vùng chọn, chưa chọn gì
-        PopupNoti noti; //Thông báo popup
         #region Sự kiện khi Color thay đổi
         // Property của colorr
         // Sự kiện xảy ra khi Color thay đổi
@@ -121,18 +134,21 @@ namespace DoAnPaint
                 //không cho phép đổi control khi chưa vẽ xong
                 if (isPainting)
                 {
-                    noti.Show();
+                    ShowNoti(this, "warning", "Complete current action first!");
                     return;
                 }
                 if (command != value)
                 {
                     command = value;
-                    if (value != Command.CURSOR)
+                    if (value != Command.CURSOR && value != Command.OCR)
                     {
                         selected = SKRect.Empty;
                         Status.Text = Capitalize(value.ToString());
                     }
-                    else Status.Text = Capitalize(value.ToString());
+                    else if (value == Command.OCR)
+                        Status.Text = value.ToString();
+                    else
+                        Status.Text = Capitalize(value.ToString());
                     CommandChanged?.Invoke(value);
                 }
             }
@@ -252,11 +268,7 @@ namespace DoAnPaint
         {
             InitializeComponent();
             bmp = new SKBitmap(ptbDrawing.Width, ptbDrawing.Height);
-            sf = SKSurface.Create(new SKImageInfo(ptbDrawing.Width, ptbDrawing.Height));
             gr = new SKCanvas(bmp);
-            noti = new PopupNoti(this);
-            noti.StartPosition = FormStartPosition.Manual;
-            noti.Location = noti.position;
             #region Linh tinh
             /*Toàn bộ mọi thứ ở đây là liên quan tới UI
              * Logic: Nó làm 2 thứ:
@@ -346,9 +358,7 @@ namespace DoAnPaint
         {
             InitializeComponent();
             bmp = remoteBmp;
-            sf = SKSurface.Create(new SKImageInfo(ptbDrawing.Width, ptbDrawing.Height));
             gr = new SKCanvas(bmp);
-            noti = new PopupNoti(this);
             #region Linh tinh
             /*Toàn bộ mọi thứ ở đây là liên quan tới UI
              * Logic: Nó làm 2 thứ:
@@ -592,28 +602,35 @@ namespace DoAnPaint
             setCursor(Cursorr.NONE);
             Cmd = Command.OCR;
             if (selected == SKRect.Empty) {
-                MessageBox.Show("Selected something first!");
+                ShowNoti(this, "warning", "You haven't selected anything!");
                 Cmd = Command.CURSOR;
                 return;
             }
             SKBitmap croped = new SKBitmap();
             bmp.ExtractSubset(croped, new SKRectI((int)selected.Left, (int)selected.Top, (int)selected.Right, (int)selected.Bottom));
+            ShowNoti(this, "Pending...", "Sending request to server...", false);
         }
+        //Sự kiện ấn chuột xuống
 
         private void ptbDrawing_MouseDown(object sender, MouseEventArgs e)
         {
-            if (Cmd != Command.CURVE && Cmd != Command.CURSOR && Cmd != Command.POLYGON) isPainting = true;
+            pointX = GetSKPoint(e.Location);
+            cX = e.X;
+            cY = e.Y;
+            if (Cmd != Command.CURVE && Cmd != Command.CURSOR && Cmd != Command.POLYGON)
+            {
+                isPainting = true;
+                var data = new DrawingData(null, null, true, pointX, null, e.X, e.Y, null, null, null, null);
+            }
             else if (Cmd == Command.CURSOR)
             {
                 isDragging = true;
                 isPainting = false;
                 selected = SKRect.Empty;
             }
-            pointX = GetSKPoint(e.Location);
-            cX = e.X;
-            cY = e.Y;
-            //Send(new[] {isPainting, pointY, cX, cY}, START);
+            //Send(data, COMMAND.START);
         }
+        //Sự kiện di chuyển chuột
 
         private void ptbDrawing_MouseMove(object sender, MouseEventArgs e)
         {
@@ -628,21 +645,27 @@ namespace DoAnPaint
                 pointY = GetSKPoint(e.Location);
                 using (var pen = new SKPaint { Color = color, StrokeWidth = width, IsAntialias = true })
                     gr.DrawLine(pointX, pointY, pen);
+                var data = new DrawingData(color, width, true, pointX, pointY, null, null, null, null, null, null);
                 pointX = pointY;
+                //Send(data, COMMAND.PENCIL);
             }
             if (Cmd == Command.CRAYON)
             {
                 pointY = GetSKPoint(e.Location);
                 using (var pen = new SKPaint { Shader = CrayonTexture(color, width), StrokeWidth = width * 4, IsAntialias = true })
                     gr.DrawLine(pointX, pointY, pen);
+                var data = new DrawingData(color, width, true, pointX, pointY, null, null, null, null, null, null);
                 pointX = pointY;
+                //Send(data, COMMAND.CRAYON);
             }
             if (Cmd == Command.ERASER)
             {
                 pointY = GetSKPoint(e.Location);
                 using (var pen = new SKPaint { Color = SKColors.White, StrokeWidth = width * 4, IsAntialias = true })
                     gr.DrawLine(pointX, pointY, pen);
+                var data = new DrawingData(color, width, true, pointX, pointY, null, null, null, null, null, null);
                 pointX = pointY;
+                //Send(data, COMMAND.CRAYON);
             }
             if (Cmd == Command.CURVE || Cmd == Command.POLYGON)
             {
@@ -665,6 +688,7 @@ namespace DoAnPaint
             }
             ptbDrawing.Invalidate();
         }
+        //Sự kiện thả chuột
 
         private void ptbDrawing_MouseUp(object sender, MouseEventArgs e)
         {
@@ -690,6 +714,7 @@ namespace DoAnPaint
             ptbDrawing.Invalidate();
             //Send(..., Command.END);
         }
+        //Sự kiện tô lên bề mặt ptbDrawing
 
         private void ptbDrawing_PaintSurface(object sender, SKPaintSurfaceEventArgs e)
         {
@@ -785,6 +810,11 @@ namespace DoAnPaint
             if (Cmd != Command.CURSOR) return;
             SKColor pixelColor = bmp.GetPixel(e.X, e.Y);
             color = pixelColor == new SKColor(0, 0, 0, 0) ? SKColors.White : pixelColor;
+        }
+
+        private void notiTick_Tick(object sender, EventArgs e)
+        {
+
         }
 
         //Crayon Shin-chan

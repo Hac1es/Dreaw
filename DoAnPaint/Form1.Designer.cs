@@ -85,12 +85,12 @@
             this.label6 = new System.Windows.Forms.Label();
             this.guna2ContextMenuStrip1 = new Guna.UI2.WinForms.Guna2ContextMenuStrip();
             this.chatPanel = new Guna.UI2.WinForms.Guna2CustomGradientPanel();
-            this.transparentRichTextBox1 = new DoAnPaint.Utils.TransparentRichTextBox();
             this.msgBox = new Guna.UI2.WinForms.Guna2TextBox();
             this.splitter2 = new System.Windows.Forms.Splitter();
             this.pictureBox33 = new System.Windows.Forms.PictureBox();
             this.Status = new System.Windows.Forms.Label();
             this.ptbDrawing = new SkiaSharp.Views.Desktop.SKControl();
+            this.transparentRichTextBox1 = new DoAnPaint.Utils.TransparentRichTextBox();
             this.panel1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox21)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.btnOCR)).BeginInit();
@@ -780,7 +780,7 @@
             this.button1.Location = new System.Drawing.Point(1637, -2);
             this.button1.Margin = new System.Windows.Forms.Padding(4);
             this.button1.Name = "button1";
-            this.button1.Size = new System.Drawing.Size(116, 54);
+            this.button1.Size = new System.Drawing.Size(116, 59);
             this.button1.TabIndex = 9;
             this.button1.Text = "Leave";
             this.button1.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageBeforeText;
@@ -848,15 +848,6 @@
             this.chatPanel.TabIndex = 28;
             this.chatPanel.Visible = false;
             this.chatPanel.Paint += new System.Windows.Forms.PaintEventHandler(this.chatPanel_Paint);
-            // 
-            // transparentRichTextBox1
-            // 
-            this.transparentRichTextBox1.BorderStyle = System.Windows.Forms.BorderStyle.None;
-            this.transparentRichTextBox1.Location = new System.Drawing.Point(12, 5);
-            this.transparentRichTextBox1.Name = "transparentRichTextBox1";
-            this.transparentRichTextBox1.Size = new System.Drawing.Size(468, 356);
-            this.transparentRichTextBox1.TabIndex = 30;
-            this.transparentRichTextBox1.Text = "";
             // 
             // msgBox
             // 
@@ -935,6 +926,15 @@
             this.ptbDrawing.MouseDown += new System.Windows.Forms.MouseEventHandler(this.ptbDrawing_MouseDown);
             this.ptbDrawing.MouseMove += new System.Windows.Forms.MouseEventHandler(this.ptbDrawing_MouseMove);
             this.ptbDrawing.MouseUp += new System.Windows.Forms.MouseEventHandler(this.ptbDrawing_MouseUp);
+            // 
+            // transparentRichTextBox1
+            // 
+            this.transparentRichTextBox1.BorderStyle = System.Windows.Forms.BorderStyle.None;
+            this.transparentRichTextBox1.Location = new System.Drawing.Point(12, 5);
+            this.transparentRichTextBox1.Name = "transparentRichTextBox1";
+            this.transparentRichTextBox1.Size = new System.Drawing.Size(468, 356);
+            this.transparentRichTextBox1.TabIndex = 30;
+            this.transparentRichTextBox1.Text = "";
             // 
             // Form1
             // 
