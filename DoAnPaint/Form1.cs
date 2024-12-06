@@ -8,32 +8,32 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.Drawing.Drawing2D;
+using SkiaSharp;
 
 using DoAnPaint.Utils;
 using System.IO;
-using System.Windows.Documents;
-using System.Windows;
 using Point = System.Drawing.Point;
 using Application = System.Windows.Forms.Application;
 using Sprache;
-using System.Text.RegularExpressions;
-using static System.Windows.Forms.VisualStyles.VisualStyleElement;
 using TrackBar = System.Windows.Forms.TrackBar;
-using Button = System.Windows.Forms.Button;
 using MessageBox = System.Windows.Forms.MessageBox;
-using System.Windows.Media;
-using Pen = System.Drawing.Pen;
 using Color = System.Drawing.Color;
-using DashStyle = System.Drawing.Drawing2D.DashStyle;
-using System.Windows.Media.Media3D;
-using Brush = System.Drawing.Brush;
-using System.Configuration;
-using System.Drawing.Imaging;
+using TheArtOfDevHtmlRenderer.Adapters.Entities;
+using static Guna.UI2.Native.WinApi;
+using TheArtOfDevHtmlRenderer.Adapters;
+using System.Reflection;
+using SkiaSharp.Views.Desktop;
+using System.Web;
+using System.Threading;
 
 namespace DoAnPaint
 {
     public partial class Form1 : Form
     {
+        #region Supporters
+        /// <summary>
+        /// Chuyển sang dạng in hoa đầu
+        /// </summary>
         private static string Capitalize(string input)
         {
             if (string.IsNullOrEmpty(input))
@@ -41,20 +41,46 @@ namespace DoAnPaint
 
             return char.ToUpper(input[0]) + input.Substring(1).ToLower();
         }
+        /// <summary>
+        /// Convert System.Drawing.Color sang SKColor
+        /// </summary>
+        private static SKColor GetSKColor(Color color)
+        {
+            return new SKColor(color.R, color.G, color.B, color.A);
+        }
+        /// <summary>
+        /// Convert SKColor sang System.Drawing.Color
+        /// </summary>
+        private static Color GetColor(SKColor color)
+        {
+            var tempcolor = Color.FromArgb(color.Alpha, color.Red, color.Green, color.Blue);
+            return tempcolor;
+        }
+        /// <summary>
+        /// Convert điểm của System.Drawing sang điểm của SkiaSharp
+        /// </summary>
+        private static SKPoint GetSKPoint(Point point)
+        {
+            return new SKPoint((int)(point.X), (int)(point.Y));
+        }
+        #endregion
+
         #region Fields
-        private Graphics gr; //Graphic chính của Form vẽ
-        private Bitmap bmp; //Bitmap để vẽ lệnh
+        private SKBitmap bmp;
+        private SKCanvas gr; //Graphic chính của Form vẽ
+        private SKSurface sf; //Bitmap để vẽ lệnh
         private Command command; //Danh sách các lệnh(không dùng cái này, ta sẽ dùng property của nó)
-        private Color colorr; //Màu(không dùng cái này, ta sẽ dùng property của nó)
+        private SKColor colorr; //Màu(không dùng cái này, ta sẽ dùng property của nó)
+        bool tracking = false; //Có cần theo dõi vị trí chuột không?
         bool isPainting = false; //Có đang sử dụng tính năng không? 
         bool isDragging = false;
         /* 
             List Points là hàng thật, thứ sẽ hiện thị lên canvas
             List TempPoints chỉ là preview, cập nhật liên tục theo vị trí chuột
          */
-        List<Point> Points = new List<Point>();
-        List<Point> TempPoints = new List<Point>();
-        Point pointX, pointY; //Dùng trong tính năng phải cập nhật vị trí liên tục(pen, eraser, crayon)
+        List<SKPoint> Points = new List<SKPoint>();
+        List<SKPoint> TempPoints = new List<SKPoint>();
+        SKPoint pointX, pointY; //Dùng trong tính năng phải cập nhật vị trí liên tục(pen, eraser, crayon)
         int x, y, sX, sY, cX, cY;
         /* 
          x, y: cập nhật vị trí liên tục, dùng trong onPaint khi cần phải cho người dùng xem trước
@@ -63,12 +89,13 @@ namespace DoAnPaint
         cX, cY: (currentX, currentY) Vị trị bắt đầu nhấn chuột xuống/Tọa độ bắt đầu của hình vẽ
          */
         int width = 2; //Độ dày khởi đầu nét bút
-        Rectangle selected = Rectangle.Empty;
+        SKRect selected = SKRect.Empty; //Khởi đầu cho vùng chọn, chưa chọn gì
+        PopupNoti noti; //Thông báo popup
         #region Sự kiện khi Color thay đổi
         // Property của colorr
         // Sự kiện xảy ra khi Color thay đổi
-        public event Action<Color> ColorChanged; //event được kích khi color thay đổi
-        private Color color //Sử dụng properties này để kiểm soát
+        public event Action<SKColor> ColorChanged; //event được kích khi color thay đổi
+        private SKColor color //Sử dụng properties này để kiểm soát
         {
             get => colorr;
             set
@@ -94,7 +121,7 @@ namespace DoAnPaint
                 //không cho phép đổi control khi chưa vẽ xong
                 if (isPainting)
                 {
-                    MessageBox.Show("Complete current action first!");
+                    noti.Show();
                     return;
                 }
                 if (command != value)
@@ -102,7 +129,7 @@ namespace DoAnPaint
                     command = value;
                     if (value != Command.CURSOR)
                     {
-                        selected = Rectangle.Empty;
+                        selected = SKRect.Empty;
                         Status.Text = Capitalize(value.ToString());
                     }
                     else Status.Text = Capitalize(value.ToString());
@@ -118,39 +145,29 @@ namespace DoAnPaint
         /// Convert điểm trên pictureBox sang điểm trên Bitmap
         /// </summary>
         /// <param name="point">Truyền điểm vào để convert</param>
-        static Point SetPoint(PictureBox pictureBox, Point point)
-        {
-            if (pictureBox.Image != null)
-            {
-                float pX = 1f * pictureBox.Image.Width / pictureBox.Width;
-                float pY = 1f * pictureBox.Image.Height / pictureBox.Height;
-                return new Point((int)(point.X * pX), (int)(point.Y * pY));
-            }
-            return point;    
-        }
-        private void Validate(Bitmap bitmap, Stack<Point> ptStack, int x, int y, Color b4, Color after)
+        private void Validate(SKBitmap bitmap, Stack<SKPoint> ptStack, float x, float y, SKColor b4, SKColor after)
         {
             //Tìm biên giới
-            Color current = bitmap.GetPixel(x, y);
+            SKColor current = bitmap.GetPixel((int)x, (int)y);
             if (current == b4)
             {
-                ptStack.Push(new Point(x, y));
-                bitmap.SetPixel(x, y, after);
+                ptStack.Push(new SKPoint(x, y));
+                bitmap.SetPixel((int)x, (int)y, after);
             }
         }
         /// <summary>
         /// Fill màu sử dụng DFS
         /// </summary>
-        public void FillUp(Bitmap bitmap, int x, int y, Color New)
+        public void FillUp(SKBitmap bitmap, int x, int y, SKColor New)
         {
-            Color Old = bitmap.GetPixel(x, y);
-            Stack<Point> ptStack = new Stack<Point>();
-            ptStack.Push(new Point(x, y));
+            SKColor Old = bitmap.GetPixel(x, y);
+            Stack<SKPoint> ptStack = new Stack<SKPoint>();
+            ptStack.Push(new SKPoint(x, y));
             bitmap.SetPixel(x, y, New);
             if (Old == New) return;
             while (ptStack.Count > 0)
             {
-                Point pt = (Point)ptStack.Pop();
+                SKPoint pt = (SKPoint)ptStack.Pop();
                 if (pt.X > 0 && pt.Y > 0 && pt.X < bitmap.Width - 1 && pt.Y < bitmap.Height - 1)
                 {
                     Validate(bitmap, ptStack, pt.X - 1, pt.Y, Old, New);
@@ -163,68 +180,84 @@ namespace DoAnPaint
         /// <summary>
         /// Tạo ra đường cong để sử dụng sau
         /// </summary>
-        public GraphicsPath CurvedPath(List<Point> points) 
+        public SKPath CurvedPath(List<SKPoint> points) 
         {
-            GraphicsPath path = new GraphicsPath();
-            path.AddCurve(points.ToArray());
+            var path = new SKPath();
+
+            if (points.Count < 2)
+                return path;
+
+            path.MoveTo(points[0]);
+
+            for (int i = 1; i < points.Count - 1; i++)
+            {
+                SKPoint mid = new SKPoint(
+                    (points[i].X + points[i + 1].X) / 2,
+                    (points[i].Y + points[i + 1].Y) / 2
+                );
+                path.QuadTo(points[i], mid); // Sử dụng QuadTo thay vì ConicTo
+            }
+
+            path.LineTo(points.Last());
             return path;
         }
         /// <summary>
         /// Tạo ra đường đi của polygon(đa giác)
         /// </summary>
-        public GraphicsPath PolygonPath(List<Point> points)
+        public SKPath PolygonPath(List<SKPoint> points)
         {
-            GraphicsPath path = new GraphicsPath();
-            if (points.Count < 3)
+            SKPath path = new SKPath();
+            path.MoveTo(points[0]);
+            if (points.Count < 2)
             {
-                path.AddLine(points[0], points[1]);
+                return path;
             }
             else
             {
-                path.AddPolygon(points.ToArray());
+                for (int i = 1; i < points.Count; i++)
+                {
+                    path.LineTo(points[i]);
+                }
             }
+            path.Close();
             return path;
         }
         /// <summary>
         /// Tạo ra Texture giả lập bút chì màu(Crayon)
         /// </summary>
-        public TextureBrush CrayonTexture(Color color, int width) 
+        public SKShader CrayonTexture(SKColor color, int width) 
         {
             int grainDensity = width * 50; //mật độ của các hạt màu
             int textureSize = width * 4; //Kích thước của texture
-            Bitmap texture = new Bitmap(textureSize, textureSize);
+            SKBitmap texture = new SKBitmap(textureSize, textureSize);
             Random random = new Random();
-
-            using (Graphics g = Graphics.FromImage(texture))
+            //Tạo ra các hạt mực ngẫu nhiên trên bề mặt của texture
+            for (int i = 0; i < grainDensity; i++)
             {
-                g.Clear(Color.Transparent);
+                int x = random.Next(textureSize);
+                int y = random.Next(textureSize);
 
-                //Tạo ra các hạt mực ngẫu nhiên trên bề mặt của texture
-                for (int i = 0; i < grainDensity; i++)
-                {
-                    int x = random.Next(textureSize);
-                    int y = random.Next(textureSize);
+                int alpha = random.Next(100, 200); // Độ trong suốt ngẫu nhiên
+                SKColor grainColor = new SKColor(color.Red, color.Green, color.Blue, (byte)alpha);
 
-                    int alpha = random.Next(100, 200); // Độ trong suốt ngẫu nhiên
-                    Color grainColor = Color.FromArgb(alpha, color); 
-
-                    texture.SetPixel(x, y, grainColor); //Tạo ra hạt mực với vị trí ngẫu nhiên
-                                                        //+ độ trong suốt ngầu nhiên + màu do người dùng chọn
-                }
+                texture.SetPixel(x, y, grainColor); //Tạo ra hạt mực với vị trí ngẫu nhiên
+                                                    //+ độ trong suốt ngầu nhiên + màu do người dùng chọn
             }
-
-            return new TextureBrush(texture);
+            // Tạo shader từ bitmap với chế độ lặp lại
+            return SKShader.CreateBitmap(texture, SKShaderTileMode.Repeat, SKShaderTileMode.Repeat);
         }
         #endregion
 
         public Form1()
         {
             InitializeComponent();
-            bmp = new Bitmap(ptbDrawing.Width, ptbDrawing.Height); //Khởi tạo Bitmap
-            gr = Graphics.FromImage(bmp); //Khởi tạo Graphics
-            gr.Clear(Color.White);
-            ptbDrawing.Image = bmp;
-            gr.SmoothingMode = SmoothingMode.AntiAlias;
+            bmp = new SKBitmap(ptbDrawing.Width, ptbDrawing.Height);
+            sf = SKSurface.Create(new SKImageInfo(ptbDrawing.Width, ptbDrawing.Height));
+            gr = new SKCanvas(bmp);
+            noti = new PopupNoti(this);
+            noti.StartPosition = FormStartPosition.Manual;
+            noti.Location = noti.position;
+            #region Linh tinh
             /*Toàn bộ mọi thứ ở đây là liên quan tới UI
              * Logic: Nó làm 2 thứ:
             -Khi màu đổi: Đổi màu trên UI
@@ -232,10 +265,10 @@ namespace DoAnPaint
             */
             controls.AddRange(new Control[] { btnPen, btnCrayon, btnEraser, btnBezier, btnLine, btnRectangle, btnEllipse, btnPolygon, btnSelect, btnOCR, btnFill });
             // Đăng ký sự kiện thay đổi màu
-            ColorChanged += newColor => ptbColor.BackColor = newColor;
+            ColorChanged += newColor => ptbColor.BackColor = GetColor(newColor);
 
             // Đặt màu khởi tạo
-            color = Color.Black; // Thay đổi Color, Panel sẽ đổi màu
+            color = GetSKColor(Color.Black); // Thay đổi Color, Panel sẽ đổi màu
 
             // Đăng ký sự kiện thay đổi lệnh
             CommandChanged += (cmd) =>
@@ -259,7 +292,7 @@ namespace DoAnPaint
                     case Command.POLYGON:
                         btnPolygon.BackColor = Color.PaleTurquoise;
                         break;
-                    case Command.BEIZER:
+                    case Command.CURVE:
                         btnBezier.BackColor = Color.PaleTurquoise;
                         break;
                     case Command.RECTANGLE:
@@ -306,23 +339,34 @@ namespace DoAnPaint
             };
             // Đặt lệnh khởi tạo
             Cmd = Command.CURSOR;
+            #endregion
         }
 
-        public Form1(Bitmap remoteBmp) //Constructor remote, trong trường hợp lấy phòng từ CSDL
+        public Form1(SKBitmap remoteBmp) //Constructor remote, trong trường hợp lấy phòng từ CSDL
         {
             InitializeComponent();
             bmp = remoteBmp;
-            gr = Graphics.FromImage(bmp);
-            gr.Clear(Color.White);
-            ptbDrawing.Image = bmp;
-            gr.SmoothingMode = SmoothingMode.AntiAlias;
-            controls.AddRange(new Control[] { btnPen, btnEraser, btnBezier, btnLine, btnRectangle, btnEllipse, btnPolygon, btnSelect, btnOCR, btnFill });
-            ColorChanged += newColor => ptbColor.BackColor = newColor;
+            sf = SKSurface.Create(new SKImageInfo(ptbDrawing.Width, ptbDrawing.Height));
+            gr = new SKCanvas(bmp);
+            noti = new PopupNoti(this);
+            #region Linh tinh
+            /*Toàn bộ mọi thứ ở đây là liên quan tới UI
+             * Logic: Nó làm 2 thứ:
+            -Khi màu đổi: Đổi màu trên UI
+            -Khi Command đổi: Đổi Control đang được lựa chọn trên UI + Đổi cái Scroll chọn giá trị
+            */
+            controls.AddRange(new Control[] { btnPen, btnCrayon, btnEraser, btnBezier, btnLine, btnRectangle, btnEllipse, btnPolygon, btnSelect, btnOCR, btnFill });
+            // Đăng ký sự kiện thay đổi màu
+            ColorChanged += newColor => ptbColor.BackColor = GetColor(newColor);
 
-            color = Color.Black;
+            // Đặt màu khởi tạo
+            color = GetSKColor(Color.Black); // Thay đổi Color, Panel sẽ đổi màu
+
+            // Đăng ký sự kiện thay đổi lệnh
             CommandChanged += (cmd) =>
             {
                 controls.ForEach(ctrl => ctrl.BackColor = Color.Transparent);
+                // Chọn Control nào, Control đó sẽ đổi màu
                 switch (cmd)
                 {
                     case Command.PENCIL:
@@ -331,13 +375,16 @@ namespace DoAnPaint
                     case Command.ERASER:
                         btnEraser.BackColor = Color.PaleTurquoise;
                         break;
+                    case Command.CRAYON:
+                        btnCrayon.BackColor = Color.PaleTurquoise;
+                        break;
                     case Command.LINE:
                         btnLine.BackColor = Color.PaleTurquoise;
                         break;
                     case Command.POLYGON:
                         btnPolygon.BackColor = Color.PaleTurquoise;
                         break;
-                    case Command.BEIZER:
+                    case Command.CURVE:
                         btnBezier.BackColor = Color.PaleTurquoise;
                         break;
                     case Command.RECTANGLE:
@@ -357,9 +404,10 @@ namespace DoAnPaint
                         break;
                 }
             };
+            // Đăng ký sự kiện thay đổi lệnh
             CommandChanged += (cmd) =>
             {
-                if (cmd == Command.CRAYON || cmd == Command.ERASER)
+                if (cmd == Command.CRAYON || cmd == Command.ERASER) //Crayon và Eraser dùng một thanh chọn cỡ khác
                 {
                     btnLineSize.Minimum = 2;
                     btnLineSize.Maximum = 10;
@@ -369,7 +417,7 @@ namespace DoAnPaint
                     btnLineSize.Value = this.width = 4;
                     Tips.SetToolTip(btnLineSize, $"Pen/Border size: {btnLineSize.Value}");
                 }
-                else
+                else //Đám còn lại dùng một thanh chọn cỡ khác
                 {
                     btnLineSize.Minimum = 1;
                     btnLineSize.Maximum = 10;
@@ -381,121 +429,10 @@ namespace DoAnPaint
                 }
                 btnLineSize.ResumeLayout();
             };
+            // Đặt lệnh khởi tạo
             Cmd = Command.CURSOR;
+            #endregion
         }
-
-        //Sự kiện ấn chuột xuống
-        private void mouseDown_Event(object sender, MouseEventArgs e)
-        {
-            if (Cmd != Command.BEIZER && Cmd != Command.CURSOR && Cmd != Command.POLYGON) isPainting = true;
-            else if (Cmd == Command.CURSOR)
-            {
-                isDragging = true;
-                isPainting = false;
-                selected = Rectangle.Empty;
-            }
-            pointX = e.Location;
-            cX = e.X;
-            cY = e.Y;
-            //Send(new[] {isPainting, pointY, cX, cY}, START);
-        }
-
-        //Sự kiện di chuyển chuột
-        private void mouseMove_Event(object sender, MouseEventArgs e)
-        {
-            lbLocation.Text = e.Location.X + ", " + e.Location.Y + "px";
-            if (!isPainting && Cmd != Command.CURSOR) return;
-            if (Cmd == Command.PENCIL)
-            {
-                pointY = e.Location;
-                using (Pen pen = new Pen(color, width))
-                    gr.DrawLine(pen, pointX, pointY);
-                pointX = pointY;
-            }
-            if (Cmd == Command.CRAYON)
-            {
-                pointY = e.Location;
-                using (Pen pen = new Pen(CrayonTexture(color, width), width * 4))
-                    gr.DrawLine(pen, pointX, pointY);
-                pointX = pointY;
-            }
-            if (Cmd == Command.ERASER)
-            {
-                pointY = e.Location;
-                using (Pen pen = new Pen(Color.White, width * 4))
-                    gr.DrawLine(pen, pointX, pointY);
-                pointX = pointY;
-            }
-            if (Cmd == Command.BEIZER || Cmd == Command.POLYGON)
-            {
-                if (TempPoints.Count > Points.Count)
-                {
-                    TempPoints[TempPoints.Count - 1] = e.Location;
-                }
-                else
-                {
-                    TempPoints.Add(e.Location);
-                }
-            }
-            x = e.X;
-            y = e.Y;
-            sX = Math.Abs(e.X - cX);
-            sY = Math.Abs(e.Y - cY);
-            if (Cmd == Command.CURSOR && isDragging == true)
-            {
-                selected = new Rectangle(Math.Min(cX, x), Math.Min(cY, y), sX, sY);
-            }    
-            ptbDrawing.Invalidate();
-        }
-
-
-        /*Preview nét vẽ cho các tính năng Shape cho người dùng*/
-        private void onPaint_Event(object sender, PaintEventArgs e)
-        {
-            Graphics paint_gr = e.Graphics;
-            paint_gr.SmoothingMode = SmoothingMode.AntiAlias;
-            if (isPainting)
-            {
-                using (Pen pen = new Pen(color, width))
-                {
-                    if (Cmd == Command.LINE)
-                    {
-                        paint_gr.DrawLine(pen, cX, cY, x, y);
-                    }
-                    if (Cmd == Command.RECTANGLE)
-                    {
-                        paint_gr.DrawRectangle(pen, Math.Min(cX, x), Math.Min(cY, y), sX, sY);
-                    }
-                    if (Cmd == Command.ELLIPSE)
-                    {
-                        paint_gr.DrawEllipse(pen, Math.Min(cX, x), Math.Min(cY, y), sX, sY);
-                    }
-                    if (Cmd == Command.BEIZER)
-                    {
-                        if (TempPoints.Count > 1)
-                            paint_gr.DrawPath(pen, CurvedPath(TempPoints));
-                    }
-                    if (Cmd == Command.POLYGON)
-                    {
-                        if (TempPoints.Count > 1)
-                            paint_gr.DrawPath(pen, PolygonPath(TempPoints));
-                    }    
-                }  
-            }
-            if (Cmd == Command.CURSOR && isDragging == true)
-            {
-                if (!selected.IsEmpty)
-                {
-                    Status.Text = $"Selected: {selected.X}, {selected.Y}, {selected.X + selected.Width}, {selected.Y + selected.Height}";
-                    using (Pen penenter = new Pen(Color.Black, 1))
-                    {
-                        penenter.DashStyle = DashStyle.DashDotDot; // Viền nét đứt
-                        paint_gr.DrawRectangle(penenter, selected);
-                    }
-                }
-            }
-        }
-
 
         //Chế độ Line
         private void btnLine_Click(object sender, EventArgs e)
@@ -504,37 +441,11 @@ namespace DoAnPaint
             Cmd = Command.LINE;
         }
 
-        //Sự kiện thả chuột
-        private void mouseUp_Event(object sender, MouseEventArgs e)
-        {
-            if (Cmd != Command.BEIZER && Cmd != Command.POLYGON) isPainting = false;
-            if (Cmd == Command.CURSOR) isDragging = false;
-            sX = Math.Abs(e.X - cX);
-            sY = Math.Abs(e.Y - cY);
-            using (Pen pen = new Pen(color, width))
-            {
-                if (Cmd == Command.LINE)
-                {
-                    gr.DrawLine(pen, cX, cY, x, y);
-                }
-                if (Cmd == Command.RECTANGLE)
-                {
-                    gr.DrawRectangle(pen, Math.Min(cX, x), Math.Min(cY, y), sX, sY);
-                }
-                if (Cmd == Command.ELLIPSE)
-                {
-                    gr.DrawEllipse(pen, Math.Min(cX, x), Math.Min(cY, y), sX, sY);
-                }
-            }    
-            ptbDrawing.Invalidate();
-            //Send(..., Command.END);
-        }
-
         //Chế độ không làm gì cả
         private void btnSelect_Click(object sender, EventArgs e)
         {
             Cmd = Command.CURSOR;
-            selected = Rectangle.Empty;
+            selected = SKRect.Empty;
             setCursor(Cursorr.NONE);
         }
 
@@ -593,7 +504,7 @@ namespace DoAnPaint
         //Chế độ vẽ đường cong Bezier
         private void btnBezier_Click(object sender, EventArgs e)
         {
-            Cmd = Command.BEIZER;
+            Cmd = Command.CURVE;
             setCursor(Cursorr.NONE);
         }
 
@@ -624,7 +535,7 @@ namespace DoAnPaint
             ColorDialog colorDialog = new ColorDialog();
             if (colorDialog.ShowDialog() == DialogResult.OK)
             {
-                color = colorDialog.Color;  
+                color = GetSKColor(colorDialog.Color);  
             }
         }
 
@@ -648,62 +559,22 @@ namespace DoAnPaint
         private void btnChangeColor_Click(object sender, EventArgs e)
         {
             PictureBox ptb = sender as PictureBox;
-            color = ptb.BackColor;
-        }
-
-        //Sự kiện click chuột
-        private void ptbDrawing_MouseClick(object sender, MouseEventArgs e)
-        {
-            Point point = SetPoint(ptbDrawing, e.Location);
-            if (Cmd == Command.FILL)
-            {
-                FillUp(bmp, point.X, point.Y, color);
-                ptbDrawing.Invalidate();
-            }
-            if (Cmd == Command.BEIZER || Cmd == Command.POLYGON)
-            {
-                if (e.Button == MouseButtons.Left)
-                {
-                    if (!isPainting)
-                    {
-                        isPainting = true;
-                        Points.Add(e.Location);
-                        TempPoints = Points.ToList();
-                    }
-                    else
-                    {
-                        Points.Add(e.Location);
-                        TempPoints = Points.ToList();
-                    }     
-                }
-                else if (Points.Any() && isPainting)
-                {
-                    Points.Add(e.Location);
-                    using (Pen pen = new Pen(color, width))
-                    {
-                        var path = Cmd == Command.BEIZER? CurvedPath(Points) : PolygonPath(Points);
-                        gr.DrawPath(pen, path);
-                    } 
-                    Points.Clear();
-                    TempPoints.Clear();
-                    isPainting = false;
-                }
-            } 
+            color = GetSKColor(ptb.BackColor);
         }
 
         //Xóa vùng được chọn
         private void btnClear_Click(object sender, EventArgs e)
         {
-            if (selected != Rectangle.Empty) //Nếu đã chọn vùng
+            if (selected != SKRect.Empty) //Nếu đã chọn vùng
             {
-                using (Brush whiteBrush = new SolidBrush(Color.White)) // Tạo bút vẽ màu trắng
+                using (var brush = new SKPaint { Style = SKPaintStyle.Fill, Color = SKColors.White, IsAntialias = true}) // Tạo bút vẽ màu trắng
                 {
-                    gr.FillRectangle(whiteBrush, selected); // Fill màu trắng vào hình chữ nhật
+                    gr.DrawRect(selected, brush); // Fill màu trắng vào hình chữ nhật
                 }
             }
             else //Xóa hết
             {
-                gr.Clear(Color.White);
+                gr.Clear(SKColors.White);
             }
             ptbDrawing.Invalidate();
         }
@@ -720,19 +591,200 @@ namespace DoAnPaint
         {
             setCursor(Cursorr.NONE);
             Cmd = Command.OCR;
-            if (selected == Rectangle.Empty) {
+            if (selected == SKRect.Empty) {
                 MessageBox.Show("Selected something first!");
+                Cmd = Command.CURSOR;
                 return;
             }
-            var croped = bmp.Clone(selected, bmp.PixelFormat);
+            SKBitmap croped = new SKBitmap();
+            bmp.ExtractSubset(croped, new SKRectI((int)selected.Left, (int)selected.Top, (int)selected.Right, (int)selected.Bottom));
         }
 
-        //Sự kiện double click
-        private void ptbDrawing_MouseDoubleClick(object sender, MouseEventArgs e)
+        private void ptbDrawing_MouseDown(object sender, MouseEventArgs e)
+        {
+            if (Cmd != Command.CURVE && Cmd != Command.CURSOR && Cmd != Command.POLYGON) isPainting = true;
+            else if (Cmd == Command.CURSOR)
+            {
+                isDragging = true;
+                isPainting = false;
+                selected = SKRect.Empty;
+            }
+            pointX = GetSKPoint(e.Location);
+            cX = e.X;
+            cY = e.Y;
+            //Send(new[] {isPainting, pointY, cX, cY}, START);
+        }
+
+        private void ptbDrawing_MouseMove(object sender, MouseEventArgs e)
+        {
+            if (!isPainting && !isDragging)
+            {
+                lbLocation.Text = $"{e.X}, {e.Y} px";
+                return;
+            }
+            lbLocation.Text = $"{e.X}, {e.Y} px";
+            if (Cmd == Command.PENCIL)
+            {
+                pointY = GetSKPoint(e.Location);
+                using (var pen = new SKPaint { Color = color, StrokeWidth = width, IsAntialias = true })
+                    gr.DrawLine(pointX, pointY, pen);
+                pointX = pointY;
+            }
+            if (Cmd == Command.CRAYON)
+            {
+                pointY = GetSKPoint(e.Location);
+                using (var pen = new SKPaint { Shader = CrayonTexture(color, width), StrokeWidth = width * 4, IsAntialias = true })
+                    gr.DrawLine(pointX, pointY, pen);
+                pointX = pointY;
+            }
+            if (Cmd == Command.ERASER)
+            {
+                pointY = GetSKPoint(e.Location);
+                using (var pen = new SKPaint { Color = SKColors.White, StrokeWidth = width * 4, IsAntialias = true })
+                    gr.DrawLine(pointX, pointY, pen);
+                pointX = pointY;
+            }
+            if (Cmd == Command.CURVE || Cmd == Command.POLYGON)
+            {
+                if (TempPoints.Count > Points.Count)
+                {
+                    TempPoints[TempPoints.Count - 1] = GetSKPoint(e.Location);
+                }
+                else
+                {
+                    TempPoints.Add(GetSKPoint(e.Location));
+                }
+            }
+            x = e.X;
+            y = e.Y;
+            sX = Math.Abs(e.X - cX);
+            sY = Math.Abs(e.Y - cY);
+            if (Cmd == Command.CURSOR && isDragging == true)
+            {
+                selected = new SKRect(Math.Min(cX, x), Math.Min(cY, y), Math.Min(cX, x) + sX, Math.Min(cY, y) + sY);
+            }
+            ptbDrawing.Invalidate();
+        }
+
+        private void ptbDrawing_MouseUp(object sender, MouseEventArgs e)
+        {
+            if (Cmd != Command.CURVE && Cmd != Command.POLYGON) isPainting = false;
+            if (Cmd == Command.CURSOR) isDragging = false;
+            sX = Math.Abs(e.X - cX);
+            sY = Math.Abs(e.Y - cY);
+            using (var pen = new SKPaint { Color = color, Style = SKPaintStyle.Stroke, StrokeWidth = width, IsAntialias = true })
+            {
+                if (Cmd == Command.LINE)
+                {
+                    gr.DrawLine(cX, cY, x, y, pen);
+                }
+                if (Cmd == Command.RECTANGLE)
+                {
+                    gr.DrawRect(Math.Min(cX, x), Math.Min(cY, y), sX, sY, pen);
+                }
+                if (Cmd == Command.ELLIPSE)
+                {
+                    gr.DrawOval(new SKRect(Math.Min(cX, x), Math.Min(cY, y), Math.Min(cX, x) + sX, Math.Min(cY, y) + sY), pen);
+                }
+            }
+            ptbDrawing.Invalidate();
+            //Send(..., Command.END);
+        }
+
+        private void ptbDrawing_PaintSurface(object sender, SKPaintSurfaceEventArgs e)
+        {
+            SKCanvas render_canvas = e.Surface.Canvas;
+            render_canvas.Clear(SKColors.White); // Xóa nền trước khi vẽ
+            if (bmp != null)
+            {
+                render_canvas.DrawBitmap(bmp, 0, 0); // Vẽ bitmap lên control
+            }
+            if (isPainting)
+            {
+                using (var pen = new SKPaint { Color = color, Style = SKPaintStyle.Stroke, StrokeWidth = width, IsAntialias = true })
+                {
+                    if (Cmd == Command.LINE)
+                    {
+                        render_canvas.DrawLine(cX, cY, x, y, pen);
+                    }
+                    if (Cmd == Command.RECTANGLE)
+                    {
+                        render_canvas.DrawRect(Math.Min(cX, x), Math.Min(cY, y), sX, sY, pen);
+                    }
+                    if (Cmd == Command.ELLIPSE)
+                    {
+                        render_canvas.DrawOval(new SKRect (Math.Min(cX, x), Math.Min(cY, y), Math.Min(cX, x) + sX, Math.Min(cY, y) + sY), pen);
+                    }
+                    if (Cmd == Command.CURVE)
+                    {
+                        if (TempPoints.Count > 1)
+                            render_canvas.DrawPath(CurvedPath(TempPoints), pen);
+                    }
+                    if (Cmd == Command.POLYGON)
+                    {
+                        if (TempPoints.Count > 1)
+                            render_canvas.DrawPath(PolygonPath(TempPoints), pen);
+                    }
+                }
+            }
+            if (Cmd == Command.CURSOR && isDragging == true)
+            {
+                if (!selected.IsEmpty)
+                {
+                    Status.Text = $"Selected: ({selected.Left}, {selected.Top}), ({selected.Right}, {selected.Bottom})";
+                    using (var penenter = new SKPaint { Color = SKColors.Black, Style = SKPaintStyle.Stroke, StrokeWidth = 1, IsAntialias = true, PathEffect = SKPathEffect.CreateDash(new float[] { 10, 5 }, 0) })
+                    {
+                        render_canvas.DrawRect(selected, penenter);
+                    }
+                }
+            }
+        }
+        //Sự kiện Click chuột
+        private void ptbDrawing_MouseClick_1(object sender, MouseEventArgs e)
+        {
+            SKPoint point = GetSKPoint(e.Location);
+            if (Cmd == Command.FILL)
+            {
+                FillUp(bmp, (int)point.X, (int)point.Y, color);
+                ptbDrawing.Invalidate();
+            }
+            if (Cmd == Command.CURVE || Cmd == Command.POLYGON)
+            {
+                if (e.Button == MouseButtons.Left)
+                {
+                    if (!isPainting)
+                    {
+                        isPainting = true;
+                        Points.Add(GetSKPoint(e.Location));
+                        TempPoints = Points.ToList();
+                    }
+                    else
+                    {
+                        Points.Add(GetSKPoint(e.Location));
+                        TempPoints = Points.ToList();
+                    }
+                }
+                else if (Points.Any() && isPainting)
+                {
+                    Points.Add(GetSKPoint(e.Location));
+                    using (var pen = new SKPaint { Color = color, Style = SKPaintStyle.Stroke, StrokeWidth = width, IsAntialias = true })
+                    {
+                        var path = Cmd == Command.CURVE ? CurvedPath(Points) : PolygonPath(Points);
+                        gr.DrawPath(path, pen);
+                    }
+                    Points.Clear();
+                    TempPoints.Clear();
+                    isPainting = false;
+                    ptbDrawing.Invalidate(); // Yêu cầu vẽ lại
+                }
+            }
+        }
+        //DoubleClick để lấy màu tại ví trí chuột
+        private void ptbDrawing_MouseDoubleClick_1(object sender, MouseEventArgs e)
         {
             if (Cmd != Command.CURSOR) return;
-            Color pixelColor = bmp.GetPixel(e.X, e.Y);
-            color = pixelColor == Color.FromArgb(0, 0, 0, 0) ? Color.White : pixelColor;
+            SKColor pixelColor = bmp.GetPixel(e.X, e.Y);
+            color = pixelColor == new SKColor(0, 0, 0, 0) ? SKColors.White : pixelColor;
         }
 
         //Crayon Shin-chan
@@ -753,12 +805,13 @@ namespace DoAnPaint
         {
             var save = new SaveFileDialog();
             save.Filter = "Image(*.jpg) |*.jpg|(*.*)|*.*";
-            if (save.ShowDialog() == DialogResult.OK)
+            save.Title = "Save Image";
+            save.FileName = "Paint.jpeg";
+            using (var stream = File.OpenWrite(save.FileName))
             {
-                Bitmap savebmp = bmp.Clone(new Rectangle(0, 0, ptbDrawing.Width, ptbDrawing.Height), bmp.PixelFormat);
-                savebmp.Save(save.FileName, ImageFormat.Jpeg);
-            } 
-                
+                // Encode SKBitmap thành PNG và ghi vào stream
+                bmp.Encode(stream, SKEncodedImageFormat.Png, 100); // 100 là mức độ nén (0-100)
+            }
         }
 
         //Logout

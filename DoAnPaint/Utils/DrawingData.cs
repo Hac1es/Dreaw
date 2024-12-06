@@ -23,7 +23,7 @@ namespace DoAnPaint.Utils
         LINE,
         RECTANGLE,
         ELLIPSE,
-        BEIZER,
+        CURVE,
         POLYGON,
         OCR
     }

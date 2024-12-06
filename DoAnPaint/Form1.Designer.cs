@@ -31,7 +31,6 @@
             this.components = new System.ComponentModel.Container();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Form1));
             this.panel1 = new System.Windows.Forms.Panel();
-            this.splitter1 = new System.Windows.Forms.Splitter();
             this.btnSelect = new System.Windows.Forms.Button();
             this.label5 = new System.Windows.Forms.Label();
             this.pictureBox21 = new System.Windows.Forms.PictureBox();
@@ -90,8 +89,8 @@
             this.msgBox = new Guna.UI2.WinForms.Guna2TextBox();
             this.splitter2 = new System.Windows.Forms.Splitter();
             this.pictureBox33 = new System.Windows.Forms.PictureBox();
-            this.ptbDrawing = new System.Windows.Forms.PictureBox();
             this.Status = new System.Windows.Forms.Label();
+            this.ptbDrawing = new SkiaSharp.Views.Desktop.SKControl();
             this.panel1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox21)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.btnOCR)).BeginInit();
@@ -123,13 +122,11 @@
             this.panel3.SuspendLayout();
             this.chatPanel.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox33)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.ptbDrawing)).BeginInit();
             this.SuspendLayout();
             // 
             // panel1
             // 
             this.panel1.BackColor = System.Drawing.SystemColors.Control;
-            this.panel1.Controls.Add(this.splitter1);
             this.panel1.Controls.Add(this.btnSelect);
             this.panel1.Controls.Add(this.label5);
             this.panel1.Controls.Add(this.pictureBox21);
@@ -151,14 +148,6 @@
             this.panel1.Name = "panel1";
             this.panel1.Size = new System.Drawing.Size(1738, 142);
             this.panel1.TabIndex = 17;
-            // 
-            // splitter1
-            // 
-            this.splitter1.Location = new System.Drawing.Point(0, 0);
-            this.splitter1.Name = "splitter1";
-            this.splitter1.Size = new System.Drawing.Size(11, 142);
-            this.splitter1.TabIndex = 24;
-            this.splitter1.TabStop = false;
             // 
             // btnSelect
             // 
@@ -803,7 +792,7 @@
             // 
             this.lbLocation.AutoSize = true;
             this.lbLocation.ForeColor = System.Drawing.Color.White;
-            this.lbLocation.Location = new System.Drawing.Point(56, 976);
+            this.lbLocation.Location = new System.Drawing.Point(47, 976);
             this.lbLocation.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.lbLocation.Name = "lbLocation";
             this.lbLocation.Size = new System.Drawing.Size(24, 16);
@@ -853,7 +842,7 @@
             // 
             this.chatPanel.Controls.Add(this.transparentRichTextBox1);
             this.chatPanel.Controls.Add(this.msgBox);
-            this.chatPanel.Location = new System.Drawing.Point(16, 532);
+            this.chatPanel.Location = new System.Drawing.Point(15, 526);
             this.chatPanel.Name = "chatPanel";
             this.chatPanel.Size = new System.Drawing.Size(494, 410);
             this.chatPanel.TabIndex = 28;
@@ -912,29 +901,12 @@
             this.pictureBox33.BackColor = System.Drawing.Color.Transparent;
             this.pictureBox33.BackgroundImage = global::DoAnPaint.Properties.Resources.ic_location;
             this.pictureBox33.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch;
-            this.pictureBox33.Location = new System.Drawing.Point(25, 969);
+            this.pictureBox33.Location = new System.Drawing.Point(15, 971);
             this.pictureBox33.Margin = new System.Windows.Forms.Padding(4);
             this.pictureBox33.Name = "pictureBox33";
             this.pictureBox33.Size = new System.Drawing.Size(24, 22);
             this.pictureBox33.TabIndex = 20;
             this.pictureBox33.TabStop = false;
-            // 
-            // ptbDrawing
-            // 
-            this.ptbDrawing.BackColor = System.Drawing.Color.White;
-            this.ptbDrawing.Cursor = System.Windows.Forms.Cursors.NoMove2D;
-            this.ptbDrawing.Location = new System.Drawing.Point(15, 189);
-            this.ptbDrawing.Margin = new System.Windows.Forms.Padding(4);
-            this.ptbDrawing.Name = "ptbDrawing";
-            this.ptbDrawing.Size = new System.Drawing.Size(1738, 772);
-            this.ptbDrawing.TabIndex = 2;
-            this.ptbDrawing.TabStop = false;
-            this.ptbDrawing.Paint += new System.Windows.Forms.PaintEventHandler(this.onPaint_Event);
-            this.ptbDrawing.MouseClick += new System.Windows.Forms.MouseEventHandler(this.ptbDrawing_MouseClick);
-            this.ptbDrawing.MouseDoubleClick += new System.Windows.Forms.MouseEventHandler(this.ptbDrawing_MouseDoubleClick);
-            this.ptbDrawing.MouseDown += new System.Windows.Forms.MouseEventHandler(this.mouseDown_Event);
-            this.ptbDrawing.MouseMove += new System.Windows.Forms.MouseEventHandler(this.mouseMove_Event);
-            this.ptbDrawing.MouseUp += new System.Windows.Forms.MouseEventHandler(this.mouseUp_Event);
             // 
             // Status
             // 
@@ -948,6 +920,22 @@
             this.Status.TabIndex = 30;
             this.Status.Text = "Cursor";
             // 
+            // ptbDrawing
+            // 
+            this.ptbDrawing.BackColor = System.Drawing.Color.White;
+            this.ptbDrawing.Cursor = System.Windows.Forms.Cursors.NoMove2D;
+            this.ptbDrawing.Location = new System.Drawing.Point(15, 192);
+            this.ptbDrawing.Name = "ptbDrawing";
+            this.ptbDrawing.Size = new System.Drawing.Size(1738, 772);
+            this.ptbDrawing.TabIndex = 31;
+            this.ptbDrawing.Text = "skControl1";
+            this.ptbDrawing.PaintSurface += new System.EventHandler<SkiaSharp.Views.Desktop.SKPaintSurfaceEventArgs>(this.ptbDrawing_PaintSurface);
+            this.ptbDrawing.MouseClick += new System.Windows.Forms.MouseEventHandler(this.ptbDrawing_MouseClick_1);
+            this.ptbDrawing.MouseDoubleClick += new System.Windows.Forms.MouseEventHandler(this.ptbDrawing_MouseDoubleClick_1);
+            this.ptbDrawing.MouseDown += new System.Windows.Forms.MouseEventHandler(this.ptbDrawing_MouseDown);
+            this.ptbDrawing.MouseMove += new System.Windows.Forms.MouseEventHandler(this.ptbDrawing_MouseMove);
+            this.ptbDrawing.MouseUp += new System.Windows.Forms.MouseEventHandler(this.ptbDrawing_MouseUp);
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
@@ -957,12 +945,12 @@
             this.Controls.Add(this.Status);
             this.Controls.Add(this.splitter2);
             this.Controls.Add(this.chatPanel);
+            this.Controls.Add(this.ptbDrawing);
             this.Controls.Add(this.label6);
             this.Controls.Add(this.RoomIDShow);
             this.Controls.Add(this.pictureBox33);
             this.Controls.Add(this.lbLocation);
             this.Controls.Add(this.panel1);
-            this.Controls.Add(this.ptbDrawing);
             this.Controls.Add(this.button1);
             this.Cursor = System.Windows.Forms.Cursors.Default;
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.None;
@@ -1006,7 +994,6 @@
             this.panel3.PerformLayout();
             this.chatPanel.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox33)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.ptbDrawing)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -1015,7 +1002,6 @@
         #endregion
 
         private System.Windows.Forms.Button btnLine;
-        private System.Windows.Forms.PictureBox ptbDrawing;
         private System.Windows.Forms.Button btnRectangle;
         private System.Windows.Forms.Button btnEllipse;
         private System.Windows.Forms.Button btnPolygon;
@@ -1073,9 +1059,9 @@
         private System.Windows.Forms.Label label7;
         private System.Windows.Forms.Button btnCrayon;
         private System.Windows.Forms.Label label8;
-        private System.Windows.Forms.Splitter splitter1;
         private System.Windows.Forms.Splitter splitter2;
         private System.Windows.Forms.Label Status;
+        private SkiaSharp.Views.Desktop.SKControl ptbDrawing;
     }
 }
 
