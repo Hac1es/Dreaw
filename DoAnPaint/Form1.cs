@@ -269,6 +269,8 @@ namespace DoAnPaint
             InitializeComponent();
             bmp = new SKBitmap(ptbDrawing.Width, ptbDrawing.Height);
             gr = new SKCanvas(bmp);
+            xuc_tac = new SKImageInfo(ptbDrawing.Width, ptbDrawing.Height);
+            xuc_tac_2 = SKSurface.Create(xuc_tac);
             #region Linh tinh
             /*Toàn bộ mọi thứ ở đây là liên quan tới UI
              * Logic: Nó làm 2 thứ:
@@ -620,7 +622,6 @@ namespace DoAnPaint
             if (Cmd != Command.CURVE && Cmd != Command.CURSOR && Cmd != Command.POLYGON)
             {
                 isPainting = true;
-                var data = new DrawingData(null, null, true, pointX, null, e.X, e.Y, null, null, null, null);
             }
             else if (Cmd == Command.CURSOR)
             {
@@ -628,7 +629,6 @@ namespace DoAnPaint
                 isPainting = false;
                 selected = SKRect.Empty;
             }
-            //Send(data, COMMAND.START);
         }
         //Sự kiện di chuyển chuột
 
@@ -643,27 +643,27 @@ namespace DoAnPaint
             if (Cmd == Command.PENCIL)
             {
                 pointY = GetSKPoint(e.Location);
+                var data = new DrawingData(false, color, width, pointX, pointY);
                 using (var pen = new SKPaint { Color = color, StrokeWidth = width, IsAntialias = true })
                     gr.DrawLine(pointX, pointY, pen);
-                var data = new DrawingData(color, width, true, pointX, pointY, null, null, null, null, null, null);
                 pointX = pointY;
                 //Send(data, COMMAND.PENCIL);
             }
             if (Cmd == Command.CRAYON)
             {
                 pointY = GetSKPoint(e.Location);
+                var data = new DrawingData(false, color, width, pointX, pointY);
                 using (var pen = new SKPaint { Shader = CrayonTexture(color, width), StrokeWidth = width * 4, IsAntialias = true })
                     gr.DrawLine(pointX, pointY, pen);
-                var data = new DrawingData(color, width, true, pointX, pointY, null, null, null, null, null, null);
                 pointX = pointY;
                 //Send(data, COMMAND.CRAYON);
             }
             if (Cmd == Command.ERASER)
             {
                 pointY = GetSKPoint(e.Location);
+                var data = new DrawingData(false, color, width, pointX, pointY);
                 using (var pen = new SKPaint { Color = SKColors.White, StrokeWidth = width * 4, IsAntialias = true })
                     gr.DrawLine(pointX, pointY, pen);
-                var data = new DrawingData(color, width, true, pointX, pointY, null, null, null, null, null, null);
                 pointX = pointY;
                 //Send(data, COMMAND.CRAYON);
             }
@@ -701,18 +701,20 @@ namespace DoAnPaint
                 if (Cmd == Command.LINE)
                 {
                     gr.DrawLine(cX, cY, x, y, pen);
+                    var data = new DrawingData(false, color, null, null, null, cX, cY, sX, sY);
                 }
                 if (Cmd == Command.RECTANGLE)
                 {
                     gr.DrawRect(Math.Min(cX, x), Math.Min(cY, y), sX, sY, pen);
+                    var data = new DrawingData(false, color, null, null, null, cX, cY, sX, sY);
                 }
                 if (Cmd == Command.ELLIPSE)
                 {
                     gr.DrawOval(new SKRect(Math.Min(cX, x), Math.Min(cY, y), Math.Min(cX, x) + sX, Math.Min(cY, y) + sY), pen);
+                    var data = new DrawingData(false, color, null, null, null, cX, cY, sX, sY);
                 }
             }
             ptbDrawing.Invalidate();
-            //Send(..., Command.END);
         }
         //Sự kiện tô lên bề mặt ptbDrawing
 
@@ -722,7 +724,10 @@ namespace DoAnPaint
             render_canvas.Clear(SKColors.White); // Xóa nền trước khi vẽ
             if (bmp != null)
             {
-                render_canvas.DrawBitmap(bmp, 0, 0); // Vẽ bitmap lên control
+                lock (bmp)
+                {
+                    render_canvas.DrawBitmap(bmp, 0, 0); // Vẽ bitmap lên control
+                }
             }
             if (isPainting)
             {
@@ -731,24 +736,34 @@ namespace DoAnPaint
                     if (Cmd == Command.LINE)
                     {
                         render_canvas.DrawLine(cX, cY, x, y, pen);
+                        var data = new DrawingData(true, color, width, null, null, x, y, null, null, cX, cY);
                     }
                     if (Cmd == Command.RECTANGLE)
                     {
                         render_canvas.DrawRect(Math.Min(cX, x), Math.Min(cY, y), sX, sY, pen);
+                        var data = new DrawingData(true, color, width, null, null, x, y, null, null, cX, cY);
                     }
                     if (Cmd == Command.ELLIPSE)
                     {
                         render_canvas.DrawOval(new SKRect (Math.Min(cX, x), Math.Min(cY, y), Math.Min(cX, x) + sX, Math.Min(cY, y) + sY), pen);
+                        var data = new DrawingData(true, color, width, null, null, x, y, null, null, cX, cY);
+
                     }
                     if (Cmd == Command.CURVE)
                     {
                         if (TempPoints.Count > 1)
+                        {
                             render_canvas.DrawPath(CurvedPath(TempPoints), pen);
+                            var data = new DrawingData(true, color, width, null, null, null, null, null, null, null, null, TempPoints);
+                        }
                     }
                     if (Cmd == Command.POLYGON)
                     {
                         if (TempPoints.Count > 1)
+                        {
                             render_canvas.DrawPath(PolygonPath(TempPoints), pen);
+                            var data = new DrawingData(true, color, width, null, null, null, null, null, null, null, null, TempPoints);
+                        }
                     }
                 }
             }
@@ -771,6 +786,7 @@ namespace DoAnPaint
             if (Cmd == Command.FILL)
             {
                 FillUp(bmp, (int)point.X, (int)point.Y, color);
+                var data = new DrawingData(false, color, null, null, null, (int)point.X, (int)point.Y);
                 ptbDrawing.Invalidate();
             }
             if (Cmd == Command.CURVE || Cmd == Command.POLYGON)
@@ -806,6 +822,7 @@ namespace DoAnPaint
                             var path = Cmd == Command.CURVE ? CurvedPath(Points) : PolygonPath(Points);
                             gr.DrawPath(path, pen);
                         }
+                        var data = new DrawingData(false, color, width, null, null, null, null, null, null, null, null, Points);
                         Points.Clear();
                         TempPoints.Clear();
                         isPainting = false;
