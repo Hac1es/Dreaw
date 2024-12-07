@@ -324,14 +324,14 @@
     <Reference Include="WindowsFormsIntegration" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Form1Supporter.cs">
+      <SubType>Form</SubType>
+    </Compile>
     <Compile Include="Form1.cs">
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="Form1.Designer.cs">
       <DependentUpon>Form1.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Form1RemoteDrawing.cs">
-      <SubType>Form</SubType>
     </Compile>
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -348,7 +348,6 @@
     <Compile Include="Utils\PopupNoti.Designer.cs">
       <DependentUpon>PopupNoti.cs</DependentUpon>
     </Compile>
-    <Compile Include="Utils\SyncClass.cs" />
     <Compile Include="Utils\TransparentRichTextBox .cs">
       <SubType>Component</SubType>
     </Compile>
