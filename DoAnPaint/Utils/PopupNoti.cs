@@ -53,7 +53,7 @@ namespace DoAnPaint.Utils
             else
             {
                 NotiColor.BackColor = Color.LightSkyBlue;
-                NotiPic.Image = Properties.Resources.Alarm;
+                NotiPic.Image = Properties.Resources.Done;
                 notiLabel.Text = type;
                 notiMessage.Text = msg;
             }

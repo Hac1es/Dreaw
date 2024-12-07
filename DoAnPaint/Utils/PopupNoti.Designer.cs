@@ -92,6 +92,7 @@
             this.Controls.Add(this.NotiColor);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.None;
             this.Name = "PopupNoti";
+            this.ShowInTaskbar = false;
             this.Text = "PopupNoti";
             ((System.ComponentModel.ISupportInitialize)(this.NotiPic)).EndInit();
             this.ResumeLayout(false);
