@@ -1,5 +1,6 @@
 ﻿using DoAnPaint.Utils;
 using Microsoft.AspNetCore.SignalR.Client;
+using Newtonsoft.Json;
 using SkiaSharp;
 using System;
 using System.Collections.Concurrent;
@@ -69,8 +70,8 @@ namespace DoAnPaint
         /// </summary>
         private void SetPen(ref SKPaint pen, DrawingData data)
         {
-            pen.Color = (SKColor)data.coloR;
-            pen.StrokeWidth = (int)data.widtH;
+            pen.Color = (SKColor)data.color;
+            pen.StrokeWidth = (int)data.width;
         }
         private void SetPen(ref SKPaint pen, SKColor color, int width)
         {
@@ -83,8 +84,8 @@ namespace DoAnPaint
         /// </summary>
         private void SetCrayon(ref SKPaint pen, DrawingData data)
         {
-            pen.Shader = CrayonTexture((SKColor)data.coloR, (int)data.widtH);
-            pen.StrokeWidth = (int)data.widtH * 4;
+            pen.Shader = CrayonTexture((SKColor)data.color, (int)data.width);
+            pen.StrokeWidth = (int)data.width * 4;
         }
         private void SetCrayon(ref SKPaint pen, SKColor color, int width)
         {
@@ -98,7 +99,7 @@ namespace DoAnPaint
         private void SetEraser(ref SKPaint pen, DrawingData data)
         {
             pen.Color = SKColors.White;
-            pen.StrokeWidth = (int)data.widtH * 4;
+            pen.StrokeWidth = (int)data.width * 4;
         }
         private void SetEraser(ref SKPaint pen, int width)
         {
@@ -143,7 +144,7 @@ namespace DoAnPaint
                         break;
                     case Command.RECTANGLE:
                         SetPen(ref remote_penenter, data);
-                        remote_canvas.DrawRect((int)data.startX, (int)data.startY, (int)data.endX, (int)data.endY, remote_pen);
+                        remote_canvas.DrawRect((int)data.startX, (int)data.startY, (int)data.endX, (int)data.endY, remote_penenter);
                         break;
                     case Command.LINE:
                         SetPen(ref remote_penenter, data);
@@ -151,18 +152,18 @@ namespace DoAnPaint
                         break;
                     case Command.ELLIPSE:
                         SetPen(ref remote_penenter, data);
-                        remote_canvas.DrawOval((int)data.startX, (int)data.startY, (int)data.endX, (int)data.endY, remote_pen);
+                        remote_canvas.DrawOval(new SKRect((float)data.startX, (float)data.startY, (float)data.endX, (float)data.endY), remote_penenter);
                         break;
                     case Command.POLYGON:
                         SetPen(ref remote_penenter, data);
-                        remote_canvas.DrawPath(PolygonPath(data.Points), remote_pen);
+                        remote_canvas.DrawPath(PolygonPath(data.Points), remote_penenter);
                         break;
                     case Command.CURVE:
                         SetPen(ref remote_penenter, data);
-                        remote_canvas.DrawPath(CurvedPath(data.Points), remote_pen);
+                        remote_canvas.DrawPath(CurvedPath(data.Points), remote_penenter);
                         break;
                     case Command.FILL:
-                        FillUp(bmp, (int)data.startX, (int)data.startY, (SKColor)data.coloR);
+                        FillUp(bmp, (int)data.startX, (int)data.startY, (SKColor)data.color);
                         break;
                 }
             }
@@ -243,7 +244,7 @@ namespace DoAnPaint
             }
         }
         #endregion
-        ConcurrentQueue<(DrawingData, Command)> BOTQueue = new ConcurrentQueue<(DrawingData, Command)>(); //Queue data gửi về
+        BlockingCollection<(string, Command)> BOTQueue = new BlockingCollection<(string, Command)>(); //Queue data gửi về
         SKPaint pen = new SKPaint { IsAntialias = true }; //Bút chì
         SKPaint penenter = new SKPaint { IsAntialias = true, Style = SKPaintStyle.Stroke }; //Bút vẽ hình
         SKPaint crayon = new SKPaint { IsAntialias = true }; //Sáp màu
@@ -368,40 +369,49 @@ namespace DoAnPaint
         #region Server Methods
         private async Task ConnectServer() //Kết nối tới server
         {
-            connection = new HubConnectionBuilder().WithUrl(serverAdd).Build();
+            connection = new HubConnectionBuilder()
+                .WithUrl(serverAdd)
+                .WithAutomaticReconnect(new[]
+                {
+                TimeSpan.Zero,   // Thử kết nối lại ngay lập tức
+                TimeSpan.FromSeconds(2),
+                TimeSpan.FromSeconds(10),
+                TimeSpan.FromSeconds(30)
+                })
+                .Build();
             await connection.StartAsync();
         }
 
-        private async Task SendData(DrawingData data, Command command)
+        private async void SendData(DrawingData data, Command command, bool flag)
         {
-            await connection.InvokeAsync("BroadcastDraw", data, command);
+            string msg = JsonConvert.SerializeObject(data);
+            await connection.InvokeAsync("BroadcastDraw", msg, command);
         }
 
         private void ListenForSignal()
         {
-            connection.On<DrawingData, Command>("HandleDrawSignal", (dataa, commandd) => 
+            connection.On<string, Command>("HandleDrawSignal", (dataa, commandd) => 
             {
-                BOTQueue.Enqueue((dataa, commandd));
+                BOTQueue.Add((dataa, commandd));
             });
         }
-        private void ProcessQueue()
+
+        private void Consuming()
         {
-            var batch = new List<(DrawingData, Command)>();
-            while (true)
+            foreach (var item in BOTQueue.GetConsumingEnumerable())
             {
-                while (BOTQueue.TryDequeue(out var item))
+                var (dataa, commandd) = item;
+                try
                 {
-                    batch.Add(item);
+                    // Xử lý dữ liệu
+                    DrawingData drawingData = JsonConvert.DeserializeObject<DrawingData>(dataa);
+                    HandleDrawData(drawingData, commandd);
                 }
-                if (batch.Count > 0)
+                catch (Exception ex)
                 {
-                    foreach (var item in batch)
-                    {
-                        var (dataa, commandd) = item;
-                        HandleDrawData(dataa, commandd);
-                    }    
-                }    
-                Thread.Sleep(16); // Tránh vòng lặp chạy quá nhanh
+                    Console.WriteLine($"Error processing data: {ex.Message}");
+                    // Log lỗi nếu cần
+                }
             }
         }
         #endregion

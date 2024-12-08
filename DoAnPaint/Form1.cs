@@ -27,6 +27,9 @@ using System.Web;
 using System.Threading;
 using System.Runtime.CompilerServices;
 using Microsoft.AspNetCore.SignalR.Client;
+using System.Web.UI.WebControls.WebParts;
+using System.Windows.Markup;
+using System.Windows;
 
 namespace DoAnPaint
 {
@@ -38,6 +41,7 @@ namespace DoAnPaint
             bmp = new SKBitmap(ptbDrawing.Width, ptbDrawing.Height);
             gr = new SKCanvas(bmp);
             remote_canvas = new SKCanvas(bmp);
+            _ = Task.Run(() => Consuming());
             #region Linh tinh
             /*Toàn bộ mọi thứ ở đây là liên quan tới UI
              * Logic: Nó làm 2 thứ:
@@ -96,96 +100,6 @@ namespace DoAnPaint
             // Đăng ký sự kiện thay đổi lệnh
             CommandChanged += (cmd) => 
             { 
-                if (cmd == Command.CRAYON || cmd == Command.ERASER) //Crayon và Eraser dùng một thanh chọn cỡ khác
-                {
-                    btnLineSize.Minimum = 2;
-                    btnLineSize.Maximum = 10;
-                    btnLineSize.TickFrequency = 2;
-                    btnLineSize.SmallChange = 2;
-                    btnLineSize.LargeChange = 2;
-                    btnLineSize.Value = this.width = 4;
-                    Tips.SetToolTip(btnLineSize, $"Pen/Border size: {btnLineSize.Value}");
-                }
-                else //Đám còn lại dùng một thanh chọn cỡ khác
-                {
-                    btnLineSize.Minimum = 1;
-                    btnLineSize.Maximum = 10;
-                    btnLineSize.TickFrequency = 1;
-                    btnLineSize.SmallChange = 1;
-                    btnLineSize.LargeChange = 1;
-                    btnLineSize.Value = this.width = 2;
-                    Tips.SetToolTip(btnLineSize, $"Pen/Border size: {btnLineSize.Value}");
-                }
-                btnLineSize.ResumeLayout();
-            };
-            // Đặt lệnh khởi tạo
-            Cmd = Command.CURSOR;
-            #endregion
-        }
-
-        public Form1(SKBitmap remoteBmp) //Constructor remote, trong trường hợp lấy phòng từ CSDL
-        {
-            InitializeComponent();
-            bmp = remoteBmp;
-            gr = new SKCanvas(bmp);
-            #region Linh tinh
-            /*Toàn bộ mọi thứ ở đây là liên quan tới UI
-             * Logic: Nó làm 2 thứ:
-            -Khi màu đổi: Đổi màu trên UI
-            -Khi Command đổi: Đổi Control đang được lựa chọn trên UI + Đổi cái Scroll chọn giá trị
-            */
-            controls.AddRange(new Control[] { btnPen, btnCrayon, btnEraser, btnBezier, btnLine, btnRectangle, btnEllipse, btnPolygon, btnSelect, btnOCR, btnFill });
-            // Đăng ký sự kiện thay đổi màu
-            ColorChanged += newColor => ptbColor.BackColor = GetColor(newColor);
-
-            // Đặt màu khởi tạo
-            color = GetSKColor(Color.Black); // Thay đổi Color, Panel sẽ đổi màu
-
-            // Đăng ký sự kiện thay đổi lệnh
-            CommandChanged += (cmd) =>
-            {
-                controls.ForEach(ctrl => ctrl.BackColor = Color.Transparent);
-                // Chọn Control nào, Control đó sẽ đổi màu
-                switch (cmd)
-                {
-                    case Command.PENCIL:
-                        btnPen.BackColor = Color.PaleTurquoise;
-                        break;
-                    case Command.ERASER:
-                        btnEraser.BackColor = Color.PaleTurquoise;
-                        break;
-                    case Command.CRAYON:
-                        btnCrayon.BackColor = Color.PaleTurquoise;
-                        break;
-                    case Command.LINE:
-                        btnLine.BackColor = Color.PaleTurquoise;
-                        break;
-                    case Command.POLYGON:
-                        btnPolygon.BackColor = Color.PaleTurquoise;
-                        break;
-                    case Command.CURVE:
-                        btnBezier.BackColor = Color.PaleTurquoise;
-                        break;
-                    case Command.RECTANGLE:
-                        btnRectangle.BackColor = Color.PaleTurquoise;
-                        break;
-                    case Command.ELLIPSE:
-                        btnEllipse.BackColor = Color.PaleTurquoise;
-                        break;
-                    case Command.CURSOR:
-                        btnSelect.BackColor = Color.PaleTurquoise;
-                        break;
-                    case Command.OCR:
-                        btnOCR.BackColor = Color.PaleTurquoise;
-                        break;
-                    case Command.FILL:
-                        btnFill.BackColor = Color.PaleTurquoise;
-                        break;
-                }
-            };
-            // Đăng ký sự kiện thay đổi lệnh
-            CommandChanged += (cmd) =>
-            {
                 if (cmd == Command.CRAYON || cmd == Command.ERASER) //Crayon và Eraser dùng một thanh chọn cỡ khác
                 {
                     btnLineSize.Minimum = 2;
@@ -399,7 +313,7 @@ namespace DoAnPaint
         }
 
         //Sự kiện di chuyển chuột
-        private async void ptbDrawing_MouseMove(object sender, MouseEventArgs e)
+        private void ptbDrawing_MouseMove(object sender, MouseEventArgs e)
         {
             if (!isPainting && !isDragging)
             {
@@ -412,33 +326,36 @@ namespace DoAnPaint
                 pointY = GetSKPoint(e.Location);
                 var data = new DrawingData(color, width, pointX, pointY);
                 SetPen(ref pen, color, width);
-                gr.DrawLine(pointX, pointY, pen);
+                lock(bmp)
+                    gr.DrawLine(pointX, pointY, pen);
+                SendData(data, Command.PENCIL, true);
                 pointX = pointY;
-                await SendData(data, Command.PENCIL);
             }
             if (Cmd == Command.CRAYON)
             {
                 pointY = GetSKPoint(e.Location);
                 var data = new DrawingData(color, width, pointX, pointY);
                 SetCrayon(ref crayon, color, width);
-                gr.DrawLine(pointX, pointY, crayon);
+                lock(bmp)
+                    gr.DrawLine(pointX, pointY, crayon);
+                SendData(data, Command.CRAYON, true);
                 pointX = pointY;
-                await SendData(data, Command.CRAYON);
             }
             if (Cmd == Command.ERASER)
             {
                 pointY = GetSKPoint(e.Location);
                 var data = new DrawingData(color, width, pointX, pointY);
                 SetEraser(ref pen, width);
-                gr.DrawLine(pointX, pointY, pen);
+                lock (bmp)
+                    gr.DrawLine(pointX, pointY, pen);
+                SendData(data, Command.ERASER, true);
                 pointX = pointY;
-                await SendData(data, Command.ERASER);
             }
             if (Cmd == Command.CURVE || Cmd == Command.POLYGON)
             {
                 if (TempPoints.Count > Points.Count)
                 {
-                    TempPoints[TempPoints.Count - 1] = GetSKPoint(e.Location);
+                    TempPoints[TempPoints.Count - 1] = GetSKPoint(e.Location);                    
                 }
                 else
                 {
@@ -453,11 +370,11 @@ namespace DoAnPaint
             {
                 selected = new SKRect(Math.Min(cX, x), Math.Min(cY, y), Math.Min(cX, x) + sX, Math.Min(cY, y) + sY);
             }
-            ptbDrawing.Invalidate();
+            RefreshCanvas();
         }
 
         //Sự kiện thả chuột
-        private async void ptbDrawing_MouseUp(object sender, MouseEventArgs e)
+        private void ptbDrawing_MouseUp(object sender, MouseEventArgs e)
         {
             if (Cmd != Command.CURVE && Cmd != Command.POLYGON) isPainting = false;
             if (Cmd == Command.CURSOR) isDragging = false;
@@ -466,25 +383,28 @@ namespace DoAnPaint
             if (Cmd == Command.LINE)
             {
                 SetPen(ref pen, color, width);
-                gr.DrawLine(cX, cY, x, y, pen);
+                lock (bmp)
+                    gr.DrawLine(cX, cY, x, y, pen);
                 var data = new DrawingData(color, width, null, null, cX, cY, x, y);
-                await SendData(data, Command.LINE);
+                SendData(data, Command.LINE, true);
             }
             if (Cmd == Command.RECTANGLE)
             {
                 SetPen(ref penenter, color, width);
-                gr.DrawRect(Math.Min(cX, x), Math.Min(cY, y), sX, sY, penenter);
+                lock (bmp)
+                    gr.DrawRect(Math.Min(cX, x), Math.Min(cY, y), sX, sY, penenter);
                 var data = new DrawingData(color, width, null, null, Math.Min(cX, x), Math.Min(cY, y), sX, sY);
-                await SendData(data, Command.RECTANGLE);
+                SendData(data, Command.RECTANGLE, true);
             }
             if (Cmd == Command.ELLIPSE)
             {
                 SetPen(ref penenter, color, width);
-                gr.DrawOval(new SKRect(Math.Min(cX, x), Math.Min(cY, y), Math.Min(cX, x) + sX, Math.Min(cY, y) + sY), penenter);
+                lock (bmp)
+                    gr.DrawOval(new SKRect(Math.Min(cX, x), Math.Min(cY, y), Math.Min(cX, x) + sX, Math.Min(cY, y) + sY), penenter);
                 var data = new DrawingData(color, width, null, null, Math.Min(cX, x), Math.Min(cY, y), Math.Min(cX, x) + sX, Math.Min(cY, y) + sY);
-                await SendData(data, Command.ELLIPSE);
+                SendData(data, Command.ELLIPSE, true);
             }
-            ptbDrawing.Invalidate();
+            RefreshCanvas();
         }
 
         //Sự kiện tô lên bề mặt ptbDrawing(được gọi khi Invalidate)
@@ -492,13 +412,7 @@ namespace DoAnPaint
         {
             SKCanvas render_canvas = e.Surface.Canvas;
             render_canvas.Clear(SKColors.White); // Xóa nền trước khi vẽ
-            if (bmp != null)
-            {
-                lock (bmp)
-                {
-                    render_canvas.DrawBitmap(bmp, 0, 0); // Vẽ bitmap lên control
-                }
-            }
+            render_canvas.DrawBitmap(bmp, 0, 0); // Vẽ bitmap lên control
             if (isPainting)
             {
                 if (Cmd == Command.LINE)
@@ -546,15 +460,16 @@ namespace DoAnPaint
             }
         }
         //Sự kiện Click chuột
-        private async void ptbDrawing_MouseClick_1(object sender, MouseEventArgs e)
+        private void ptbDrawing_MouseClick_1(object sender, MouseEventArgs e)
         {
             SKPoint point = GetSKPoint(e.Location);
             if (Cmd == Command.FILL)
             {
-                FillUp(bmp, (int)point.X, (int)point.Y, color);
+                lock (bmp)
+                    FillUp(bmp, (int)point.X, (int)point.Y, color);
                 var data = new DrawingData(color, null, null, null, (int)point.X, (int)point.Y);
-                await SendData(data, Command.FILL);
-                ptbDrawing.Invalidate();
+                SendData(data, Command.FILL, true);
+                RefreshCanvas();
             }
             if (Cmd == Command.CURVE || Cmd == Command.POLYGON)
             {
@@ -586,13 +501,14 @@ namespace DoAnPaint
                     {
                         var data = new DrawingData(color, width, null, null, null, null, null, null, Points);
                         var path = Cmd == Command.CURVE ? CurvedPath(Points) : PolygonPath(Points);
-                        SetPen(ref pen, color, width);
-                        gr.DrawPath(path, pen);
+                        SetPen(ref penenter, color, width);
+                        lock (bmp)
+                            gr.DrawPath(path, penenter);
+                        SendData(data, Cmd == Command.CURVE ? Command.CURVE : Command.POLYGON, true);
                         Points.Clear();
                         TempPoints.Clear();
                         isPainting = false;
-                        await SendData(data, Cmd == Command.CURVE ? Command.CURVE : Command.POLYGON);
-                        ptbDrawing.Invalidate(); // Yêu cầu vẽ lại
+                        RefreshCanvas(); // Yêu cầu vẽ lại
                     }
                 }
             }
@@ -680,13 +596,7 @@ namespace DoAnPaint
         private async void Form1_Load(object sender, EventArgs e)
         {
             await ConnectServer();
-            connection.On<DrawingData, Command>("HandleDrawSignal", (dataa, commandd) =>
-            {
-                BOTQueue.Enqueue((dataa, commandd));
-            });
-            Thread thread = new Thread(ProcessQueue);
-            thread.IsBackground = true; // Đặt luồng nền để ứng dụng tắt khi form đóng
-            thread.Start();
+            _ = Task.Run(() => ListenForSignal());
         }
     }
 }
