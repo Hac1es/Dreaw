@@ -438,15 +438,16 @@ namespace DoAnPaint
                 return;
         }
         //Sự kiện Click chuột
-        private void ptbDrawing_MouseClick_1(object sender, MouseEventArgs e)
+        private async void ptbDrawing_MouseClick_1(object sender, MouseEventArgs e)
         {
             SKPoint point = GetSKPoint(e.Location);
             if (Cmd == Command.FILL)
             {
-                //await FillUpAsync(bmp, (int)point.X, (int)point.Y, color, false);
-                //var data = new DrawingData(color, null, null, null, (int)point.X, (int)point.Y);
-                //SendData(data, Command.FILL, true);
-                //RefreshCanvas();
+                var filled_bmp = await FillUpAsync(bmp, (int)point.X, (int)point.Y, color);
+                var data = new DrawingData(null, null, null, null, null, null, null, null, null, filled_bmp);
+                var msg = JsonConvert.SerializeObject(data);
+                BOTQueue.Add((msg, Command.FILL, false));
+                SendData(msg, Command.FILL, false);
             }
             if (Cmd == Command.CURVE || Cmd == Command.POLYGON)
             {
@@ -478,7 +479,8 @@ namespace DoAnPaint
                     {
                         var data = new DrawingData(color, width, null, null, null, null, null, null, Points);
                         string msg = JsonConvert.SerializeObject(data);
-                        SendData(msg, Cmd, true);
+                        BOTQueue.Add((msg, Cmd, false));
+                        SendData(msg, Cmd, false);
                         Points.Clear();
                         TempPoints.Clear();
                         isPainting = false;

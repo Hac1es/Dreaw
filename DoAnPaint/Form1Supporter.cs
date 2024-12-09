@@ -170,7 +170,7 @@ namespace DoAnPaint
                     canvas.DrawPath(CurvedPath(data.Points), penenter);
                     break;
                 case Command.FILL:
-                    //FillUpAsync(bmp, (int)data.startX, (int)data.startY, (SKColor)data.color, false);
+                    canvas.DrawBitmap(data.syncBitmap, 0, 0);
                     break;
                 case Command.CLEAR:
                     if (data.startX.HasValue && data.startY.HasValue && data.endX.HasValue && data.endY.HasValue)
@@ -303,9 +303,9 @@ namespace DoAnPaint
         /// <summary>
         /// Fill màu sử dụng DFS
         /// </summary>
-        public Task FillUpAsync(SKBitmap bitmap, int x, int y, SKColor New, bool remote)
+        public Task<SKBitmap> FillUpAsync(SKBitmap bitmap, int x, int y, SKColor New)
         {
-            Task task = Task.Run(() =>
+            return Task.Run(() =>
             {
                 // Tạo một bitmap phụ có cùng kích thước với bitmap chính
                 SKBitmap bufferBitmap = new SKBitmap(bmp.Width, bmp.Height);
@@ -315,15 +315,8 @@ namespace DoAnPaint
                     canvas.DrawBitmap(bmp, 0, 0);
                 }
                 FillUp(bufferBitmap, x, y, New);
-                lock (bmp)
-                {
-                    if (!remote)
-                        gr.DrawBitmap(bufferBitmap, 0, 0);
-                    //else
-                        //remote_canvas.DrawBitmap(bufferBitmap, 0, 0);
-                }    
+                return bufferBitmap; 
             });
-            return task;
         }
         /// <summary>
         /// Tạo ra đường cong để sử dụng sau
