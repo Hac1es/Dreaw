@@ -176,10 +176,14 @@ namespace DoAnPaint
                     if (data.startX.HasValue && data.startY.HasValue && data.endX.HasValue && data.endY.HasValue)
                         using (var brush = new SKPaint { Style = SKPaintStyle.Fill, Color = SKColors.White, IsAntialias = true }) // Tạo bút vẽ màu trắng
                         {
-                            gr.DrawRect((int)data.startX, (int)data.startY, (int)data.endX, (int)data.endY, brush); // Fill màu trắng vào hình chữ nhật
+                            canvas.DrawRect((int)data.startX, (int)data.startY, (int)data.endX, (int)data.endY, brush); // Fill màu trắng vào hình chữ nhật
                         }
                     else
                         gr.Clear(SKColors.White);
+                    break;
+                case Command.CURSOR:
+                    var selectedd = new SKRect((float)data.startX, (float)data.startY, (float)data.endX, (float)data.endY);
+                    canvas.DrawRect(selectedd, dotted_pen);
                     break;
             }
         }
@@ -192,7 +196,7 @@ namespace DoAnPaint
         private SKColor colorr; //Màu(không dùng cái này, ta sẽ dùng property của nó)
         bool isPainting = false; //Có đang sử dụng tính năng không? 
         bool isDragging = false;
-        bool isPreview;
+        bool isPreview = true;
         /* 
             List Points là hàng thật, thứ sẽ hiện thị lên canvas
             List TempPoints chỉ là preview, cập nhật liên tục theo vị trí chuột
@@ -263,6 +267,7 @@ namespace DoAnPaint
         SKPaint pen = new SKPaint { IsAntialias = true }; //Bút chì
         SKPaint penenter = new SKPaint { IsAntialias = true, Style = SKPaintStyle.Stroke }; //Bút vẽ hình
         SKPaint crayon = new SKPaint { IsAntialias = true }; //Sáp màu
+        SKPaint dotted_pen = new SKPaint { Color = SKColors.Black, Style = SKPaintStyle.Stroke, StrokeWidth = 1, IsAntialias = true, PathEffect = SKPathEffect.CreateDash(new float[] { 10, 5 }, 0) }; //Bút dùng trong chế độ chọn
         (string, Command) tempData = (null, Command.CURSOR); //Dữ liệu tạm
         #endregion
 

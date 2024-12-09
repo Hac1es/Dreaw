@@ -376,6 +376,10 @@ namespace DoAnPaint
             if (Cmd == Command.CURSOR && isDragging == true)
             {
                 selected = new SKRect(Math.Min(cX, x), Math.Min(cY, y), Math.Min(cX, x) + sX, Math.Min(cY, y) + sY);
+                Status.Text = $"Selected: ({selected.Left}, {selected.Top}), ({selected.Right}, {selected.Bottom})";
+                var data = new DrawingData(null, null, null, null, (int)selected.Left, (int)selected.Top, (int)selected.Right, (int)selected.Bottom);
+                string msg = JsonConvert.SerializeObject(data);
+                BOTQueue.Add((msg, Cmd, true));
             }
         }
 
@@ -383,7 +387,14 @@ namespace DoAnPaint
         private void ptbDrawing_MouseUp(object sender, MouseEventArgs e)
         {
             if (Cmd != Command.CURVE && Cmd != Command.POLYGON) isPainting = false;
-            if (Cmd == Command.CURSOR) isDragging = false;
+            if (Cmd == Command.CURSOR && isDragging == true)
+            {
+                isDragging = false;
+                var data = new DrawingData(null, null, null, null, 0, 0, 0, 0);
+                string msg = JsonConvert.SerializeObject(data);
+                BOTQueue.Add((msg, Cmd, true));
+            } 
+                
             if (Cmd == Command.LINE)
             {
                 var data = new DrawingData(color, width, null, null, cX, cY, x, y);
@@ -412,19 +423,8 @@ namespace DoAnPaint
         {
             SKCanvas render_canvas = e.Surface.Canvas;
             render_canvas.Clear(SKColors.White); // Xóa nền trước khi vẽ
-            var (currentData, currentFlag) = tempData;
-            if (Cmd == Command.CURSOR && isDragging == true)
-            {
-                if (!selected.IsEmpty)
-                {
-                    Status.Text = $"Selected: ({selected.Left}, {selected.Top}), ({selected.Right}, {selected.Bottom})";
-                    using (var penenter = new SKPaint { Color = SKColors.Black, Style = SKPaintStyle.Stroke, StrokeWidth = 1, IsAntialias = true, PathEffect = SKPathEffect.CreateDash(new float[] { 10, 5 }, 0) })
-                    {
-                        render_canvas.DrawRect(selected, penenter);
-                    }
-                }
-            }
-            else if (!isPreview && currentData != null)
+            var (currentData, currentFlag) = tempData;           
+            if (!isPreview && currentData != null)
             {
                 HandleDrawData(currentData, currentFlag, gr);
                 render_canvas.DrawBitmap(bmp, 0, 0);
