@@ -30,6 +30,7 @@ using Microsoft.AspNetCore.SignalR.Client;
 using System.Web.UI.WebControls.WebParts;
 using System.Windows.Markup;
 using System.Windows;
+using Newtonsoft.Json;
 
 namespace DoAnPaint
 {
@@ -40,7 +41,6 @@ namespace DoAnPaint
             InitializeComponent();
             bmp = new SKBitmap(ptbDrawing.Width, ptbDrawing.Height);
             gr = new SKCanvas(bmp);
-            remote_canvas = new SKCanvas(bmp);
             _ = Task.Run(() => Consuming());
             #region Linh tinh
             /*Toàn bộ mọi thứ ở đây là liên quan tới UI
@@ -260,16 +260,19 @@ namespace DoAnPaint
         {
             if (selected != SKRect.Empty) //Nếu đã chọn vùng
             {
-                using (var brush = new SKPaint { Style = SKPaintStyle.Fill, Color = SKColors.White, IsAntialias = true}) // Tạo bút vẽ màu trắng
-                {
-                    gr.DrawRect(selected, brush); // Fill màu trắng vào hình chữ nhật
-                }
+                var data = new DrawingData(null, null, null, null, (int)selected.Left, (int)selected.Top, (int)selected.Right, (int)selected.Bottom);
+                string msg = JsonConvert.SerializeObject(data);
+                BOTQueue.Add((msg, Command.CLEAR, false));
+                SendData(msg, Command.CLEAR, false);
             }
             else //Xóa hết
             {
-                gr.Clear(SKColors.White);
+                var data = new DrawingData();
+                string msg = JsonConvert.SerializeObject(data);
+                BOTQueue.Add((msg, Command.CLEAR, false));
+                SendData(msg, Command.CLEAR, false);
             }
-            ptbDrawing.Invalidate();
+            selected = SKRect.Empty;
         }
 
         //Fill màu
@@ -321,34 +324,13 @@ namespace DoAnPaint
                 return;
             }
             lbLocation.Text = $"{e.X}, {e.Y} px";
-            if (Cmd == Command.PENCIL)
+            if (Cmd == Command.PENCIL || Cmd == Command.CRAYON || Cmd == Command.ERASER)
             {
                 pointY = GetSKPoint(e.Location);
                 var data = new DrawingData(color, width, pointX, pointY);
-                SetPen(ref pen, color, width);
-                lock(bmp)
-                    gr.DrawLine(pointX, pointY, pen);
-                SendData(data, Command.PENCIL, true);
-                pointX = pointY;
-            }
-            if (Cmd == Command.CRAYON)
-            {
-                pointY = GetSKPoint(e.Location);
-                var data = new DrawingData(color, width, pointX, pointY);
-                SetCrayon(ref crayon, color, width);
-                lock(bmp)
-                    gr.DrawLine(pointX, pointY, crayon);
-                SendData(data, Command.CRAYON, true);
-                pointX = pointY;
-            }
-            if (Cmd == Command.ERASER)
-            {
-                pointY = GetSKPoint(e.Location);
-                var data = new DrawingData(color, width, pointX, pointY);
-                SetEraser(ref pen, width);
-                lock (bmp)
-                    gr.DrawLine(pointX, pointY, pen);
-                SendData(data, Command.ERASER, true);
+                string msg = JsonConvert.SerializeObject(data);
+                BOTQueue.Add((msg, Cmd, false));
+                SendData(msg, Cmd, false);
                 pointX = pointY;
             }
             if (Cmd == Command.CURVE || Cmd == Command.POLYGON)
@@ -361,16 +343,40 @@ namespace DoAnPaint
                 {
                     TempPoints.Add(GetSKPoint(e.Location));
                 }
+                var data = new DrawingData(color, width, null, null, null, null, null, null, TempPoints);
+                string msg = JsonConvert.SerializeObject(data);
+                BOTQueue.Add((msg, Cmd, true));
+                SendData(msg, Cmd, true);
             }
             x = e.X;
             y = e.Y;
             sX = Math.Abs(e.X - cX);
             sY = Math.Abs(e.Y - cY);
+            if (Cmd == Command.LINE)
+            {
+                var data = new DrawingData(color, width, null, null, cX, cY, x, y);
+                string msg = JsonConvert.SerializeObject(data);
+                BOTQueue.Add((msg, Cmd, true));
+                SendData(msg, Cmd, true);
+            }
+            if (Cmd == Command.RECTANGLE)
+            {
+                var data = new DrawingData(color, width, null, null, Math.Min(cX, x), Math.Min(cY, y), sX, sY);
+                string msg = JsonConvert.SerializeObject(data);
+                BOTQueue.Add((msg, Cmd, true));
+                SendData(msg, Cmd, true);
+            } 
+            if (Cmd == Command.ELLIPSE)
+            {
+                var data = new DrawingData(color, width, null, null, Math.Min(cX, x), Math.Min(cY, y), Math.Min(cX, x) + sX, Math.Min(cY, y) + sY);
+                string msg = JsonConvert.SerializeObject(data);
+                BOTQueue.Add((msg, Cmd, true));
+                SendData(msg, Cmd, true);
+            }    
             if (Cmd == Command.CURSOR && isDragging == true)
             {
                 selected = new SKRect(Math.Min(cX, x), Math.Min(cY, y), Math.Min(cX, x) + sX, Math.Min(cY, y) + sY);
             }
-            RefreshCanvas();
         }
 
         //Sự kiện thả chuột
@@ -378,33 +384,27 @@ namespace DoAnPaint
         {
             if (Cmd != Command.CURVE && Cmd != Command.POLYGON) isPainting = false;
             if (Cmd == Command.CURSOR) isDragging = false;
-            sX = Math.Abs(e.X - cX);
-            sY = Math.Abs(e.Y - cY);
             if (Cmd == Command.LINE)
             {
-                SetPen(ref pen, color, width);
-                lock (bmp)
-                    gr.DrawLine(cX, cY, x, y, pen);
                 var data = new DrawingData(color, width, null, null, cX, cY, x, y);
-                SendData(data, Command.LINE, true);
+                string msg = JsonConvert.SerializeObject(data);
+                BOTQueue.Add((msg, Cmd, false));
+                SendData(msg, Cmd, false);
             }
             if (Cmd == Command.RECTANGLE)
             {
-                SetPen(ref penenter, color, width);
-                lock (bmp)
-                    gr.DrawRect(Math.Min(cX, x), Math.Min(cY, y), sX, sY, penenter);
                 var data = new DrawingData(color, width, null, null, Math.Min(cX, x), Math.Min(cY, y), sX, sY);
-                SendData(data, Command.RECTANGLE, true);
+                string msg = JsonConvert.SerializeObject(data);
+                BOTQueue.Add((msg, Cmd, false));
+                SendData(msg, Cmd, false);
             }
             if (Cmd == Command.ELLIPSE)
             {
-                SetPen(ref penenter, color, width);
-                lock (bmp)
-                    gr.DrawOval(new SKRect(Math.Min(cX, x), Math.Min(cY, y), Math.Min(cX, x) + sX, Math.Min(cY, y) + sY), penenter);
                 var data = new DrawingData(color, width, null, null, Math.Min(cX, x), Math.Min(cY, y), Math.Min(cX, x) + sX, Math.Min(cY, y) + sY);
-                SendData(data, Command.ELLIPSE, true);
+                string msg = JsonConvert.SerializeObject(data);
+                BOTQueue.Add((msg, Cmd, false));
+                SendData(msg, Cmd, false);
             }
-            RefreshCanvas();
         }
 
         //Sự kiện tô lên bề mặt ptbDrawing(được gọi khi Invalidate)
@@ -412,41 +412,7 @@ namespace DoAnPaint
         {
             SKCanvas render_canvas = e.Surface.Canvas;
             render_canvas.Clear(SKColors.White); // Xóa nền trước khi vẽ
-            render_canvas.DrawBitmap(bmp, 0, 0); // Vẽ bitmap lên control
-            if (isPainting)
-            {
-                if (Cmd == Command.LINE)
-                {
-                    SetPen(ref pen, color, width);
-                    render_canvas.DrawLine(cX, cY, x, y, pen);
-                }
-                if (Cmd == Command.RECTANGLE)
-                {
-                    SetPen(ref penenter, color, width);
-                    render_canvas.DrawRect(Math.Min(cX, x), Math.Min(cY, y), sX, sY, penenter);
-                }
-                if (Cmd == Command.ELLIPSE)
-                {
-                    SetPen(ref penenter, color, width);
-                    render_canvas.DrawOval(new SKRect(Math.Min(cX, x), Math.Min(cY, y), Math.Min(cX, x) + sX, Math.Min(cY, y) + sY), penenter);
-                }
-                if (Cmd == Command.CURVE)
-                {
-                    if (TempPoints.Count > 1)
-                    {
-                        SetPen(ref penenter, color, width);
-                        render_canvas.DrawPath(CurvedPath(TempPoints), penenter);
-                    }
-                }
-                if (Cmd == Command.POLYGON)
-                {
-                    if (TempPoints.Count > 1)
-                    {
-                        SetPen(ref penenter, color, width);
-                        render_canvas.DrawPath(PolygonPath(TempPoints), penenter);
-                    }
-                }
-            }
+            var (currentData, currentFlag) = tempData;
             if (Cmd == Command.CURSOR && isDragging == true)
             {
                 if (!selected.IsEmpty)
@@ -458,6 +424,18 @@ namespace DoAnPaint
                     }
                 }
             }
+            else if (!isPreview && currentData != null)
+            {
+                HandleDrawData(currentData, currentFlag, gr);
+                render_canvas.DrawBitmap(bmp, 0, 0);
+            }
+            else if (currentData != null)
+            {
+                render_canvas.DrawBitmap(bmp, 0, 0);
+                HandleDrawData(currentData, currentFlag, render_canvas);
+            }
+            else
+                return;
         }
         //Sự kiện Click chuột
         private void ptbDrawing_MouseClick_1(object sender, MouseEventArgs e)
@@ -465,11 +443,10 @@ namespace DoAnPaint
             SKPoint point = GetSKPoint(e.Location);
             if (Cmd == Command.FILL)
             {
-                lock (bmp)
-                    FillUp(bmp, (int)point.X, (int)point.Y, color);
-                var data = new DrawingData(color, null, null, null, (int)point.X, (int)point.Y);
-                SendData(data, Command.FILL, true);
-                RefreshCanvas();
+                //await FillUpAsync(bmp, (int)point.X, (int)point.Y, color, false);
+                //var data = new DrawingData(color, null, null, null, (int)point.X, (int)point.Y);
+                //SendData(data, Command.FILL, true);
+                //RefreshCanvas();
             }
             if (Cmd == Command.CURVE || Cmd == Command.POLYGON)
             {
@@ -500,19 +477,16 @@ namespace DoAnPaint
                     else
                     {
                         var data = new DrawingData(color, width, null, null, null, null, null, null, Points);
-                        var path = Cmd == Command.CURVE ? CurvedPath(Points) : PolygonPath(Points);
-                        SetPen(ref penenter, color, width);
-                        lock (bmp)
-                            gr.DrawPath(path, penenter);
-                        SendData(data, Cmd == Command.CURVE ? Command.CURVE : Command.POLYGON, true);
+                        string msg = JsonConvert.SerializeObject(data);
+                        SendData(msg, Cmd, true);
                         Points.Clear();
                         TempPoints.Clear();
                         isPainting = false;
-                        RefreshCanvas(); // Yêu cầu vẽ lại
                     }
                 }
             }
         }
+
         //DoubleClick để lấy màu tại ví trí chuột
         private void ptbDrawing_MouseDoubleClick_1(object sender, MouseEventArgs e)
         {

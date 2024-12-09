@@ -107,7 +107,8 @@ namespace DoAnPaint.Utils
         ELLIPSE,
         CURVE,
         POLYGON,
-        OCR
+        OCR,
+        CLEAR
     }
 
     public enum Cursorr

@@ -109,65 +109,79 @@ namespace DoAnPaint
         /// <summary>
         /// Gọi PaintSurface
         /// </summary>
-        private void RefreshCanvas()
+        private void RefreshCanvas(Command cmd)
         {
-            if (InvokeRequired)
+            if (ptbDrawing.InvokeRequired)
             {
-                BeginInvoke(new Action(() =>
+                Invoke(new Action(() =>
                 {
-                    ptbDrawing.Invalidate();
+                    if (cmd == Command.PENCIL || cmd == Command.CRAYON || cmd == Command.ERASER)
+                        ptbDrawing.Refresh();
+                    else
+                        ptbDrawing.Invalidate();
                 }));
             }
             else
-                ptbDrawing.Invalidate();
+            {
+                if(cmd == Command.PENCIL || cmd == Command.CRAYON || cmd == Command.ERASER)
+                    ptbDrawing.Refresh();
+                else
+                    ptbDrawing.Invalidate();
+            }    
         }
         /// <summary>
         /// Vẽ dữ liệu remote lên bitmap
         /// </summary>
-        private void HandleDrawData(DrawingData data, Command flag)
+        private void HandleDrawData(string msg, Command flag, SKCanvas canvas)
         {
-            lock (bmp)
+            DrawingData data = JsonConvert.DeserializeObject<DrawingData>(msg);
+            switch (flag)
             {
-                switch (flag)
-                {
-                    case Command.PENCIL:
-                        SetPen(ref remote_pen, data);
-                        remote_canvas.DrawLine((SKPoint)data.PointX, (SKPoint)data.PointY, remote_pen);
-                        break;
-                    case Command.CRAYON:
-                        SetCrayon(ref remote_crayon, data);
-                        remote_canvas.DrawLine((SKPoint)data.PointX, (SKPoint)data.PointY, remote_pen);
-                        break;
-                    case Command.ERASER:
-                        SetEraser(ref remote_pen, data);
-                        remote_canvas.DrawLine((SKPoint)data.PointX, (SKPoint)data.PointY, remote_pen);
-                        break;
-                    case Command.RECTANGLE:
-                        SetPen(ref remote_penenter, data);
-                        remote_canvas.DrawRect((int)data.startX, (int)data.startY, (int)data.endX, (int)data.endY, remote_penenter);
-                        break;
-                    case Command.LINE:
-                        SetPen(ref remote_penenter, data);
-                        remote_canvas.DrawLine((int)data.startX, (int)data.startY, (int)data.endX, (int)data.endY, remote_pen);
-                        break;
-                    case Command.ELLIPSE:
-                        SetPen(ref remote_penenter, data);
-                        remote_canvas.DrawOval(new SKRect((float)data.startX, (float)data.startY, (float)data.endX, (float)data.endY), remote_penenter);
-                        break;
-                    case Command.POLYGON:
-                        SetPen(ref remote_penenter, data);
-                        remote_canvas.DrawPath(PolygonPath(data.Points), remote_penenter);
-                        break;
-                    case Command.CURVE:
-                        SetPen(ref remote_penenter, data);
-                        remote_canvas.DrawPath(CurvedPath(data.Points), remote_penenter);
-                        break;
-                    case Command.FILL:
-                        FillUp(bmp, (int)data.startX, (int)data.startY, (SKColor)data.color);
-                        break;
-                }
+                case Command.PENCIL:
+                    SetPen(ref pen, data);
+                    canvas.DrawLine((SKPoint)data.PointX, (SKPoint)data.PointY, pen);
+                    break;
+                case Command.CRAYON:
+                    SetCrayon(ref crayon, data);
+                    canvas.DrawLine((SKPoint)data.PointX, (SKPoint)data.PointY, crayon);
+                    break;
+                case Command.ERASER:
+                    SetEraser(ref pen, data);
+                    canvas.DrawLine((SKPoint)data.PointX, (SKPoint)data.PointY, pen);
+                    break;
+                case Command.RECTANGLE:
+                    SetPen(ref penenter, data);
+                    canvas.DrawRect((int)data.startX, (int)data.startY, (int)data.endX, (int)data.endY, penenter);
+                    break;
+                case Command.LINE:
+                    SetPen(ref pen, data);
+                    canvas.DrawLine((int)data.startX, (int)data.startY, (int)data.endX, (int)data.endY, pen);
+                    break;
+                case Command.ELLIPSE:
+                    SetPen(ref penenter, data);
+                    canvas.DrawOval(new SKRect((float)data.startX, (float)data.startY, (float)data.endX, (float)data.endY), penenter);
+                    break;
+                case Command.POLYGON:
+                    SetPen(ref penenter, data);
+                    canvas.DrawPath(PolygonPath(data.Points), penenter);
+                    break;
+                case Command.CURVE:
+                    SetPen(ref penenter, data);
+                    canvas.DrawPath(CurvedPath(data.Points), penenter);
+                    break;
+                case Command.FILL:
+                    //FillUpAsync(bmp, (int)data.startX, (int)data.startY, (SKColor)data.color, false);
+                    break;
+                case Command.CLEAR:
+                    if (data.startX.HasValue && data.startY.HasValue && data.endX.HasValue && data.endY.HasValue)
+                        using (var brush = new SKPaint { Style = SKPaintStyle.Fill, Color = SKColors.White, IsAntialias = true }) // Tạo bút vẽ màu trắng
+                        {
+                            gr.DrawRect((int)data.startX, (int)data.startY, (int)data.endX, (int)data.endY, brush); // Fill màu trắng vào hình chữ nhật
+                        }
+                    else
+                        gr.Clear(SKColors.White);
+                    break;
             }
-            RefreshCanvas();
         }
         #endregion
 
@@ -178,6 +192,7 @@ namespace DoAnPaint
         private SKColor colorr; //Màu(không dùng cái này, ta sẽ dùng property của nó)
         bool isPainting = false; //Có đang sử dụng tính năng không? 
         bool isDragging = false;
+        bool isPreview;
         /* 
             List Points là hàng thật, thứ sẽ hiện thị lên canvas
             List TempPoints chỉ là preview, cập nhật liên tục theo vị trí chuột
@@ -244,14 +259,11 @@ namespace DoAnPaint
             }
         }
         #endregion
-        BlockingCollection<(string, Command)> BOTQueue = new BlockingCollection<(string, Command)>(); //Queue data gửi về
+        BlockingCollection<(string, Command, bool)> BOTQueue = new BlockingCollection<(string, Command, bool)>(); //Queue data gửi về
         SKPaint pen = new SKPaint { IsAntialias = true }; //Bút chì
         SKPaint penenter = new SKPaint { IsAntialias = true, Style = SKPaintStyle.Stroke }; //Bút vẽ hình
         SKPaint crayon = new SKPaint { IsAntialias = true }; //Sáp màu
-        SKPaint remote_pen = new SKPaint { IsAntialias = true }; //Bút chì remote
-        SKPaint remote_penenter = new SKPaint { IsAntialias = true, Style = SKPaintStyle.Stroke }; //Bút vẽ hình remote
-        SKPaint remote_crayon = new SKPaint { IsAntialias = true }; //Sáp màu remote
-        SKCanvas remote_canvas; //Canvas remote, liên kết với bmp
+        (string, Command) tempData = (null, Command.CURSOR); //Dữ liệu tạm
         #endregion
 
         #region DrawMethods
@@ -269,9 +281,6 @@ namespace DoAnPaint
                 bitmap.SetPixel((int)x, (int)y, after);
             }
         }
-        /// <summary>
-        /// Fill màu sử dụng DFS
-        /// </summary>
         public void FillUp(SKBitmap bitmap, int x, int y, SKColor New)
         {
             SKColor Old = bitmap.GetPixel(x, y);
@@ -290,6 +299,31 @@ namespace DoAnPaint
                     Validate(bitmap, ptStack, pt.X, pt.Y + 1, Old, New);
                 }
             }
+        }
+        /// <summary>
+        /// Fill màu sử dụng DFS
+        /// </summary>
+        public Task FillUpAsync(SKBitmap bitmap, int x, int y, SKColor New, bool remote)
+        {
+            Task task = Task.Run(() =>
+            {
+                // Tạo một bitmap phụ có cùng kích thước với bitmap chính
+                SKBitmap bufferBitmap = new SKBitmap(bmp.Width, bmp.Height);
+                using (SKCanvas canvas = new SKCanvas(bufferBitmap))
+                {
+                    // Vẽ nội dung của bitmap chính lên bitmap phụ
+                    canvas.DrawBitmap(bmp, 0, 0);
+                }
+                FillUp(bufferBitmap, x, y, New);
+                lock (bmp)
+                {
+                    if (!remote)
+                        gr.DrawBitmap(bufferBitmap, 0, 0);
+                    //else
+                        //remote_canvas.DrawBitmap(bufferBitmap, 0, 0);
+                }    
+            });
+            return task;
         }
         /// <summary>
         /// Tạo ra đường cong để sử dụng sau
@@ -382,17 +416,16 @@ namespace DoAnPaint
             await connection.StartAsync();
         }
 
-        private async void SendData(DrawingData data, Command command, bool flag)
+        private async void SendData(string data, Command command, bool isPreview)
         {
-            string msg = JsonConvert.SerializeObject(data);
-            await connection.InvokeAsync("BroadcastDraw", msg, command);
+            await connection.InvokeAsync("BroadcastDraw", data, command, isPreview);
         }
 
         private void ListenForSignal()
         {
-            connection.On<string, Command>("HandleDrawSignal", (dataa, commandd) => 
+            connection.On<string, Command, bool>("HandleDrawSignal", (dataa, commandd, isPrevieww) => 
             {
-                BOTQueue.Add((dataa, commandd));
+                BOTQueue.Add((dataa, commandd, isPrevieww));
             });
         }
 
@@ -400,18 +433,10 @@ namespace DoAnPaint
         {
             foreach (var item in BOTQueue.GetConsumingEnumerable())
             {
-                var (dataa, commandd) = item;
-                try
-                {
-                    // Xử lý dữ liệu
-                    DrawingData drawingData = JsonConvert.DeserializeObject<DrawingData>(dataa);
-                    HandleDrawData(drawingData, commandd);
-                }
-                catch (Exception ex)
-                {
-                    Console.WriteLine($"Error processing data: {ex.Message}");
-                    // Log lỗi nếu cần
-                }
+                var (dataa, commandd, isPrevieww) = item;
+                isPreview = isPrevieww;
+                tempData = (dataa, commandd);
+                RefreshCanvas(commandd);
             }
         }
         #endregion

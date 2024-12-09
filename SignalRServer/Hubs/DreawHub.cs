@@ -10,9 +10,9 @@ namespace SignalRServer.Hubs
         public readonly static List<UserModel> conns = new List<UserModel>();
         public readonly static Dictionary<string, string> conns_map = new Dictionary<string, string>();
         
-        public async Task BroadcastDraw(string data, Command cmd)
+        public async Task BroadcastDraw(string data, Command cmd, bool isPreview)
         {
-            await Clients.Others.SendAsync("HandleDrawSignal", data, cmd);
+            await Clients.Others.SendAsync("HandleDrawSignal", data, cmd, isPreview);
         }
     }
 }
