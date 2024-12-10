@@ -209,5 +209,68 @@
       <Name>DrawingForm</Name>
     </ProjectReference>
   </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Start1.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\startbt1.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Login2.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\forgetbt1.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\loginbt2.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\sigbut2.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\loginbt3.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Sigin2.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\signupbt2.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\login3.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\mail1.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\sendcode2.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\newpass1.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\cof2.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\resend2.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\code2.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\wolrd2.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\sigout2.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\create2.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\join2.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\use2.png" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

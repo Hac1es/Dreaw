@@ -8,6 +8,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
+using System.Net.Http;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -185,6 +186,7 @@ namespace DoAnPaint
             }
         }
         #endregion
+        
 
         #region Fields
         private SKBitmap bmp; //Bitmap để vẽ
@@ -437,7 +439,16 @@ namespace DoAnPaint
         {
             //var tcs = new TaskCompletionSource<string>(); // Create a TaskCompletionSource
             connection = new HubConnectionBuilder()
-                .WithUrl(serverAdd)
+                .WithUrl(serverAdd, options =>
+                {
+                    options.HttpMessageHandlerFactory = handler =>
+                    {
+                        if (handler is HttpClientHandler clientHandler)
+                            clientHandler.ServerCertificateCustomValidationCallback =
+                                (message, cert, chain, sslPolicyErrors) => true;
+                        return handler;
+                    };
+                })
                 .WithAutomaticReconnect(new[]
                 {
             TimeSpan.Zero,   // Try reconnecting immediately
