@@ -85,7 +85,7 @@
             this.label6 = new System.Windows.Forms.Label();
             this.guna2ContextMenuStrip1 = new Guna.UI2.WinForms.Guna2ContextMenuStrip();
             this.chatPanel = new Guna.UI2.WinForms.Guna2CustomGradientPanel();
-            this.transparentRichTextBox1 = new DoAnPaint.Utils.TransparentRichTextBox();
+            this.MessageBox = new DoAnPaint.Utils.TransparentRichTextBox();
             this.msgBox = new Guna.UI2.WinForms.Guna2TextBox();
             this.splitter2 = new System.Windows.Forms.Splitter();
             this.pictureBox33 = new System.Windows.Forms.PictureBox();
@@ -840,7 +840,7 @@
             // 
             // chatPanel
             // 
-            this.chatPanel.Controls.Add(this.transparentRichTextBox1);
+            this.chatPanel.Controls.Add(this.MessageBox);
             this.chatPanel.Controls.Add(this.msgBox);
             this.chatPanel.Location = new System.Drawing.Point(15, 526);
             this.chatPanel.Name = "chatPanel";
@@ -849,14 +849,15 @@
             this.chatPanel.Visible = false;
             this.chatPanel.Paint += new System.Windows.Forms.PaintEventHandler(this.chatPanel_Paint);
             // 
-            // transparentRichTextBox1
+            // MessageBox
             // 
-            this.transparentRichTextBox1.BorderStyle = System.Windows.Forms.BorderStyle.None;
-            this.transparentRichTextBox1.Location = new System.Drawing.Point(12, 5);
-            this.transparentRichTextBox1.Name = "transparentRichTextBox1";
-            this.transparentRichTextBox1.Size = new System.Drawing.Size(468, 356);
-            this.transparentRichTextBox1.TabIndex = 30;
-            this.transparentRichTextBox1.Text = "";
+            this.MessageBox.BorderStyle = System.Windows.Forms.BorderStyle.None;
+            this.MessageBox.Font = new System.Drawing.Font("Segoe UI Semilight", 10.8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.MessageBox.Location = new System.Drawing.Point(12, 14);
+            this.MessageBox.Name = "MessageBox";
+            this.MessageBox.Size = new System.Drawing.Size(468, 347);
+            this.MessageBox.TabIndex = 30;
+            this.MessageBox.Text = "";
             // 
             // msgBox
             // 
@@ -1056,7 +1057,7 @@
         private Guna.UI2.WinForms.Guna2ContextMenuStrip guna2ContextMenuStrip1;
         private Guna.UI2.WinForms.Guna2CustomGradientPanel chatPanel;
         private Guna.UI2.WinForms.Guna2TextBox msgBox;
-        private Utils.TransparentRichTextBox transparentRichTextBox1;
+        private Utils.TransparentRichTextBox MessageBox;
         private System.Windows.Forms.Label label7;
         private System.Windows.Forms.Button btnCrayon;
         private System.Windows.Forms.Label label8;

@@ -12,7 +12,7 @@ namespace DoAnPaint.Utils
     public class DrawingData
     {
         [JsonIgnore]
-        public SKBitmap syncBitmap {  get; set; }
+        public SKBitmap Bitmap {  get; set; }
         [JsonIgnore]
         public SKColor? color { get; set; }
         [JsonIgnore]
@@ -37,8 +37,8 @@ namespace DoAnPaint.Utils
         {
             get
             {
-                if (syncBitmap == null) return null;
-                using (var image = syncBitmap.Encode(SKEncodedImageFormat.Png, 100))
+                if (Bitmap == null) return null;
+                using (var image = Bitmap.Encode(SKEncodedImageFormat.Png, 100))
                 {
                     return Convert.ToBase64String(image.ToArray());
                 }
@@ -47,12 +47,12 @@ namespace DoAnPaint.Utils
             {
                 if (string.IsNullOrEmpty(value))
                 {
-                    syncBitmap = null;
+                    Bitmap = null;
                 }
                 else
                 {
                     var imageData = Convert.FromBase64String(value);
-                    syncBitmap = SKBitmap.Decode(imageData);
+                    Bitmap = SKBitmap.Decode(imageData);
                 }
             }
         }
@@ -81,7 +81,7 @@ namespace DoAnPaint.Utils
         /// <param name="syncBitmap">Bitmap dùng để đồng bộ hóa</param>
         public DrawingData(SKColor? coloR = null, int? widtH = null, SKPoint? pointX = null, SKPoint? pointY = null, int? startX = null, int? startY = null, int? endX = null, int? endY = null, List<SKPoint> points = null, SKBitmap syncBitmap = null)
         {
-            this.syncBitmap = syncBitmap;
+            this.Bitmap = syncBitmap;
             this.color = coloR;
             this.Points = points;
             this.PointX = pointX;
@@ -118,5 +118,41 @@ namespace DoAnPaint.Utils
         CRAYON,
         ERASER,
         FILL
+    }
+
+    public class SyncData
+    {
+        [JsonIgnore]
+        public SKBitmap syncBmp;
+        public string currentChat {  get; set; }
+        //Chuyển đổi SKBitmap sang chuỗi Base64 và ngược lại
+        public string SyncBitmapBase64
+        {
+            get
+            {
+                if (syncBmp == null) return null;
+                using (var image = syncBmp.Encode(SKEncodedImageFormat.Png, 100))
+                {
+                    return Convert.ToBase64String(image.ToArray());
+                }
+            }
+            set
+            {
+                if (string.IsNullOrEmpty(value))
+                {
+                    syncBmp = null;
+                }
+                else
+                {
+                    var imageData = Convert.FromBase64String(value);
+                    syncBmp = SKBitmap.Decode(imageData);
+                }
+            }
+        }
+        public SyncData(SKBitmap syncBmp, string currentChat)
+        {
+            this.syncBmp = syncBmp;
+            this.currentChat = currentChat;
+        }
     }
 }

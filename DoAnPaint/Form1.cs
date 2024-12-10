@@ -41,7 +41,8 @@ namespace DoAnPaint
             InitializeComponent();
             bmp = new SKBitmap(ptbDrawing.Width, ptbDrawing.Height);
             gr = new SKCanvas(bmp);
-            _ = Task.Run(() => Consuming());
+            _ = Task.Run(() => DrawConsumer());
+            _ = Task.Run(() => MsgConsumer());
             #region Linh tinh
             /*Toàn bộ mọi thứ ở đây là liên quan tới UI
              * Logic: Nó làm 2 thứ:
@@ -549,6 +550,7 @@ namespace DoAnPaint
 
         //Mở chat
         //Shift + Enter để mở chat
+        //Enter để gửi chat
         protected override bool ProcessCmdKey(ref Message msg, Keys keyData)
         {
             // Xử lý Shift + Enter
@@ -562,6 +564,8 @@ namespace DoAnPaint
             // Xử lý Enter khi chatPanel hiển thị
             if (keyData == Keys.Enter && chatPanel.Visible)
             {
+                MSGQueue.Add((msgBox.Text, true));
+                SendMsg(msgBox.Text);
                 msgBox.Clear();
                 return true; // Chặn xử lý tiếp theo
             }
@@ -571,8 +575,16 @@ namespace DoAnPaint
 
         private async void Form1_Load(object sender, EventArgs e)
         {
-            await ConnectServer();
-            _ = Task.Run(() => ListenForSignal());
+            /*string syncedData = */await ConnectServer();
+            /*if (syncedData != null)
+            {
+                var synced_data = JsonConvert.DeserializeObject<SyncData>(syncedData);
+                gr.DrawBitmap(synced_data.syncBmp, 0, 0);
+                RefreshCanvas(Command.CURSOR);
+            }*/
+            _ = Task.Run(() => ListenForDrawSignal());
+            _ = Task.Run(() => ListenForMsg());
+            /*_ = Task.Run(() => Syncing());*/
         }
     }
 }
