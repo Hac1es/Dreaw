@@ -41,7 +41,8 @@ namespace DoAnPaint
             InitializeComponent();
             bmp = new SKBitmap(ptbDrawing.Width, ptbDrawing.Height);
             gr = new SKCanvas(bmp);
-            _ = Task.Run(() => Consuming());
+            _ = Task.Run(() => DrawConsumer());
+            _ = Task.Run(() => MsgConsumer());
             #region Linh tinh
             /*Toàn bộ mọi thứ ở đây là liên quan tới UI
              * Logic: Nó làm 2 thứ:
@@ -376,6 +377,10 @@ namespace DoAnPaint
             if (Cmd == Command.CURSOR && isDragging == true)
             {
                 selected = new SKRect(Math.Min(cX, x), Math.Min(cY, y), Math.Min(cX, x) + sX, Math.Min(cY, y) + sY);
+                Status.Text = $"Selected: ({selected.Left}, {selected.Top}), ({selected.Right}, {selected.Bottom})";
+                var data = new DrawingData(null, null, null, null, (int)selected.Left, (int)selected.Top, (int)selected.Right, (int)selected.Bottom);
+                string msg = JsonConvert.SerializeObject(data);
+                BOTQueue.Add((msg, Cmd, true));
             }
         }
 
@@ -383,7 +388,14 @@ namespace DoAnPaint
         private void ptbDrawing_MouseUp(object sender, MouseEventArgs e)
         {
             if (Cmd != Command.CURVE && Cmd != Command.POLYGON) isPainting = false;
-            if (Cmd == Command.CURSOR) isDragging = false;
+            if (Cmd == Command.CURSOR && isDragging == true)
+            {
+                isDragging = false;
+                var data = new DrawingData(null, null, null, null, 0, 0, 0, 0);
+                string msg = JsonConvert.SerializeObject(data);
+                BOTQueue.Add((msg, Cmd, true));
+            } 
+                
             if (Cmd == Command.LINE)
             {
                 var data = new DrawingData(color, width, null, null, cX, cY, x, y);
@@ -412,19 +424,8 @@ namespace DoAnPaint
         {
             SKCanvas render_canvas = e.Surface.Canvas;
             render_canvas.Clear(SKColors.White); // Xóa nền trước khi vẽ
-            var (currentData, currentFlag) = tempData;
-            if (Cmd == Command.CURSOR && isDragging == true)
-            {
-                if (!selected.IsEmpty)
-                {
-                    Status.Text = $"Selected: ({selected.Left}, {selected.Top}), ({selected.Right}, {selected.Bottom})";
-                    using (var penenter = new SKPaint { Color = SKColors.Black, Style = SKPaintStyle.Stroke, StrokeWidth = 1, IsAntialias = true, PathEffect = SKPathEffect.CreateDash(new float[] { 10, 5 }, 0) })
-                    {
-                        render_canvas.DrawRect(selected, penenter);
-                    }
-                }
-            }
-            else if (!isPreview && currentData != null)
+            var (currentData, currentFlag) = tempData;           
+            if (!isPreview && currentData != null)
             {
                 HandleDrawData(currentData, currentFlag, gr);
                 render_canvas.DrawBitmap(bmp, 0, 0);
@@ -438,15 +439,16 @@ namespace DoAnPaint
                 return;
         }
         //Sự kiện Click chuột
-        private void ptbDrawing_MouseClick_1(object sender, MouseEventArgs e)
+        private async void ptbDrawing_MouseClick_1(object sender, MouseEventArgs e)
         {
             SKPoint point = GetSKPoint(e.Location);
             if (Cmd == Command.FILL)
             {
-                //await FillUpAsync(bmp, (int)point.X, (int)point.Y, color, false);
-                //var data = new DrawingData(color, null, null, null, (int)point.X, (int)point.Y);
-                //SendData(data, Command.FILL, true);
-                //RefreshCanvas();
+                var filled_bmp = await FillUpAsync(bmp, (int)point.X, (int)point.Y, color);
+                var data = new DrawingData(null, null, null, null, null, null, null, null, null, filled_bmp);
+                var msg = JsonConvert.SerializeObject(data);
+                BOTQueue.Add((msg, Command.FILL, false));
+                SendData(msg, Command.FILL, false);
             }
             if (Cmd == Command.CURVE || Cmd == Command.POLYGON)
             {
@@ -478,7 +480,8 @@ namespace DoAnPaint
                     {
                         var data = new DrawingData(color, width, null, null, null, null, null, null, Points);
                         string msg = JsonConvert.SerializeObject(data);
-                        SendData(msg, Cmd, true);
+                        BOTQueue.Add((msg, Cmd, false));
+                        SendData(msg, Cmd, false);
                         Points.Clear();
                         TempPoints.Clear();
                         isPainting = false;
@@ -547,6 +550,7 @@ namespace DoAnPaint
 
         //Mở chat
         //Shift + Enter để mở chat
+        //Enter để gửi chat
         protected override bool ProcessCmdKey(ref Message msg, Keys keyData)
         {
             // Xử lý Shift + Enter
@@ -560,6 +564,8 @@ namespace DoAnPaint
             // Xử lý Enter khi chatPanel hiển thị
             if (keyData == Keys.Enter && chatPanel.Visible)
             {
+                MSGQueue.Add((msgBox.Text, true));
+                SendMsg(msgBox.Text);
                 msgBox.Clear();
                 return true; // Chặn xử lý tiếp theo
             }
@@ -569,8 +575,16 @@ namespace DoAnPaint
 
         private async void Form1_Load(object sender, EventArgs e)
         {
-            await ConnectServer();
-            _ = Task.Run(() => ListenForSignal());
+            /*string syncedData = */await ConnectServer();
+            /*if (syncedData != null)
+            {
+                var synced_data = JsonConvert.DeserializeObject<SyncData>(syncedData);
+                gr.DrawBitmap(synced_data.syncBmp, 0, 0);
+                RefreshCanvas(Command.CURSOR);
+            }*/
+            _ = Task.Run(() => ListenForDrawSignal());
+            _ = Task.Run(() => ListenForMsg());
+            /*_ = Task.Run(() => Syncing());*/
         }
     }
 }

@@ -22,7 +22,6 @@ namespace DoAnPaint.Utils
         /// <param name="caller">Form cha gọi ra cái noti</param>
         /// <param name="type">Loại thông báo: ok, error, warning, khác(điền gì cũng được)</param>
         /// <param name="msg">Thông báo cần hiện thị</param>
-        /// <param name="flag">Có đặt thời gian hết hạn không?</param>
         public PopupNoti(Form caller, string type, string msg, bool flag = true)
         {
             InitializeComponent();

@@ -1,4 +1,5 @@
 ﻿using DoAnPaint.Utils;
+using Guna.UI2.AnimatorNS;
 using Microsoft.AspNetCore.SignalR.Client;
 using Newtonsoft.Json;
 using SkiaSharp;
@@ -57,14 +58,27 @@ namespace DoAnPaint
         private static void ShowNoti(Form form, string what, string msg, bool flag = true)
         {
             PopupNoti noti;
-            if (flag == true)
-                noti = new PopupNoti(form, what, msg);
-            else
-                noti = new PopupNoti(form, what, msg, false);
+            noti = new PopupNoti(form, what, msg, flag);
             noti.StartPosition = FormStartPosition.Manual;
             noti.Location = noti.position;
             noti.Show();
         }
+        /*private static Task<string> ShowNotiBlock(Form form, string what, string msg, SemaphoreSlim canStart, SKBitmap bmp, string chatdata)
+        {
+            return Task.Run(() =>
+            {
+                PopupNoti noti;
+                noti = new PopupNoti(form, what, msg, false);
+                noti.StartPosition = FormStartPosition.Manual;
+                noti.Location = noti.position;
+                noti.ShowDialog();
+                canStart.Wait();
+                SyncData data = new SyncData(bmp, chatdata);
+                noti.Close();
+                canStart.Release();
+                return JsonConvert.SerializeObject(data);
+            });
+        }*/
         /// <summary>
         /// Chỉnh cấu hình pen
         /// </summary>
@@ -73,12 +87,6 @@ namespace DoAnPaint
             pen.Color = (SKColor)data.color;
             pen.StrokeWidth = (int)data.width;
         }
-        private void SetPen(ref SKPaint pen, SKColor color, int width)
-        {
-            pen.Color = color;
-            pen.StrokeWidth = width;
-        }
-
         /// <summary>
         /// Chỉnh cấu hình crayon
         /// </summary>
@@ -87,12 +95,6 @@ namespace DoAnPaint
             pen.Shader = CrayonTexture((SKColor)data.color, (int)data.width);
             pen.StrokeWidth = (int)data.width * 4;
         }
-        private void SetCrayon(ref SKPaint pen, SKColor color, int width)
-        {
-            pen.Shader = CrayonTexture(color, width);
-            pen.StrokeWidth = width * 4;
-        }
-
         /// <summary>
         /// Chỉnh cấu hình eraser
         /// </summary>
@@ -100,11 +102,6 @@ namespace DoAnPaint
         {
             pen.Color = SKColors.White;
             pen.StrokeWidth = (int)data.width * 4;
-        }
-        private void SetEraser(ref SKPaint pen, int width)
-        {
-            pen.Color = SKColors.White;
-            pen.StrokeWidth = width * 4;
         }
         /// <summary>
         /// Gọi PaintSurface
@@ -170,16 +167,20 @@ namespace DoAnPaint
                     canvas.DrawPath(CurvedPath(data.Points), penenter);
                     break;
                 case Command.FILL:
-                    //FillUpAsync(bmp, (int)data.startX, (int)data.startY, (SKColor)data.color, false);
+                    canvas.DrawBitmap(data.Bitmap, 0, 0);
                     break;
                 case Command.CLEAR:
                     if (data.startX.HasValue && data.startY.HasValue && data.endX.HasValue && data.endY.HasValue)
                         using (var brush = new SKPaint { Style = SKPaintStyle.Fill, Color = SKColors.White, IsAntialias = true }) // Tạo bút vẽ màu trắng
                         {
-                            gr.DrawRect((int)data.startX, (int)data.startY, (int)data.endX, (int)data.endY, brush); // Fill màu trắng vào hình chữ nhật
+                            canvas.DrawRect((int)data.startX, (int)data.startY, (int)data.endX, (int)data.endY, brush); // Fill màu trắng vào hình chữ nhật
                         }
                     else
                         gr.Clear(SKColors.White);
+                    break;
+                case Command.CURSOR:
+                    var selectedd = new SKRect((float)data.startX, (float)data.startY, (float)data.endX, (float)data.endY);
+                    canvas.DrawRect(selectedd, dotted_pen);
                     break;
             }
         }
@@ -192,7 +193,7 @@ namespace DoAnPaint
         private SKColor colorr; //Màu(không dùng cái này, ta sẽ dùng property của nó)
         bool isPainting = false; //Có đang sử dụng tính năng không? 
         bool isDragging = false;
-        bool isPreview;
+        bool isPreview = true;
         /* 
             List Points là hàng thật, thứ sẽ hiện thị lên canvas
             List TempPoints chỉ là preview, cập nhật liên tục theo vị trí chuột
@@ -209,6 +210,7 @@ namespace DoAnPaint
          */
         int width = 2; //Độ dày khởi đầu nét bút
         SKRect selected = SKRect.Empty; //Khởi đầu cho vùng chọn, chưa chọn gì
+        SemaphoreSlim canStart = new SemaphoreSlim(1);
         #region Sự kiện khi Color thay đổi
         // Property của colorr
         // Sự kiện xảy ra khi Color thay đổi
@@ -259,14 +261,16 @@ namespace DoAnPaint
             }
         }
         #endregion
-        BlockingCollection<(string, Command, bool)> BOTQueue = new BlockingCollection<(string, Command, bool)>(); //Queue data gửi về
+        BlockingCollection<(string, Command, bool)> BOTQueue = new BlockingCollection<(string, Command, bool)>(); //Queue data vẽ
+        BlockingCollection<(string, bool)> MSGQueue = new BlockingCollection<(string, bool)>();
         SKPaint pen = new SKPaint { IsAntialias = true }; //Bút chì
         SKPaint penenter = new SKPaint { IsAntialias = true, Style = SKPaintStyle.Stroke }; //Bút vẽ hình
         SKPaint crayon = new SKPaint { IsAntialias = true }; //Sáp màu
+        SKPaint dotted_pen = new SKPaint { Color = SKColors.Black, Style = SKPaintStyle.Stroke, StrokeWidth = 1, IsAntialias = true, PathEffect = SKPathEffect.CreateDash(new float[] { 10, 5 }, 0) }; //Bút dùng trong chế độ chọn
         (string, Command) tempData = (null, Command.CURSOR); //Dữ liệu tạm
         #endregion
 
-        #region DrawMethods
+        #region Draw Methods
         /// <summary>
         /// Convert điểm trên pictureBox sang điểm trên Bitmap
         /// </summary>
@@ -303,9 +307,9 @@ namespace DoAnPaint
         /// <summary>
         /// Fill màu sử dụng DFS
         /// </summary>
-        public Task FillUpAsync(SKBitmap bitmap, int x, int y, SKColor New, bool remote)
+        public Task<SKBitmap> FillUpAsync(SKBitmap bitmap, int x, int y, SKColor New)
         {
-            Task task = Task.Run(() =>
+            return Task.Run(() =>
             {
                 // Tạo một bitmap phụ có cùng kích thước với bitmap chính
                 SKBitmap bufferBitmap = new SKBitmap(bmp.Width, bmp.Height);
@@ -315,15 +319,8 @@ namespace DoAnPaint
                     canvas.DrawBitmap(bmp, 0, 0);
                 }
                 FillUp(bufferBitmap, x, y, New);
-                lock (bmp)
-                {
-                    if (!remote)
-                        gr.DrawBitmap(bufferBitmap, 0, 0);
-                    //else
-                        //remote_canvas.DrawBitmap(bufferBitmap, 0, 0);
-                }    
+                return bufferBitmap; 
             });
-            return task;
         }
         /// <summary>
         /// Tạo ra đường cong để sử dụng sau
@@ -396,32 +393,93 @@ namespace DoAnPaint
         }
         #endregion
 
-        #region Server Properties
-        HubConnection connection;
-        string serverAdd = "https://localhost:7183/api/hub";
-        #endregion
-        #region Server Methods
-        private async Task ConnectServer() //Kết nối tới server
+        #region Message Methods
+        // Hàm hỗ trợ để thêm văn bản với màu sắc
+        private void AppenddText(RichTextBox box, string text, Color color)
         {
+            box.SelectionStart = box.TextLength;
+            box.SelectionLength = 0;
+
+            box.SelectionColor = color;
+            box.AppendText(text);
+            box.SelectionColor = box.ForeColor; // Trở về màu mặc định
+        }
+        private void ShowMsg(string msg, bool where)
+        {
+            if (!where && !chatPanel.Visible) 
+                ShowNoti(this, "New Message!", $"Dreawer: {msg}");
+            MessageBox.Invoke(new Action(() =>
+            {
+                if (where)
+                {
+                    AppenddText(MessageBox, "You: ", Color.Indigo);
+                    AppenddText(MessageBox, $"{msg}{Environment.NewLine}", MessageBox.ForeColor);
+                }
+                else
+                {
+                    AppenddText(MessageBox, "Dreawer: ", Color.SteelBlue);
+                    AppenddText(MessageBox, $"{msg}{Environment.NewLine}", MessageBox.ForeColor);
+                }
+            }));
+        }
+        #endregion
+
+        #region Server Properties
+        HubConnection connection; //Kết nối
+        string serverAdd = "https://localhost:7183/api/hub"; //Địa chỉ Server
+        #endregion
+
+        #region ServerMethods
+        /// <summary>
+        /// Kết nối tới server
+        /// </summary>
+        private async Task/*<string>*/ ConnectServer()
+        {
+            //var tcs = new TaskCompletionSource<string>(); // Create a TaskCompletionSource
             connection = new HubConnectionBuilder()
                 .WithUrl(serverAdd)
                 .WithAutomaticReconnect(new[]
                 {
-                TimeSpan.Zero,   // Thử kết nối lại ngay lập tức
-                TimeSpan.FromSeconds(2),
-                TimeSpan.FromSeconds(10),
-                TimeSpan.FromSeconds(30)
+            TimeSpan.Zero,   // Try reconnecting immediately
+            TimeSpan.FromSeconds(2),
+            TimeSpan.FromSeconds(10),
+            TimeSpan.FromSeconds(30)
                 })
                 .Build();
+
+            // Start the connection
             await connection.StartAsync();
+
+            /*// Register the event handler
+            connection.On<string>("SyncFromServer", (currentData) =>
+            {
+                tcs.TrySetResult(currentData);
+            });
+
+            // Return the synced data when available (you might need to wait for it)
+            return await tcs.Task;*/
         }
 
+        /// <summary>
+        /// Gửi dữ liệu vẽ
+        /// </summary>
+        /// <param name="data">Dữ liệu vẽ được JSONify</param>
+        /// <param name="command">Lệnh vẽ</param>
+        /// <param name="isPreview">Nét vẽ thật hay preview</param>
         private async void SendData(string data, Command command, bool isPreview)
         {
             await connection.InvokeAsync("BroadcastDraw", data, command, isPreview);
         }
 
-        private void ListenForSignal()
+        private async void SendMsg(string msg)
+        {
+            await connection.InvokeAsync("BroadcastMsg", msg);
+        }
+
+        /// <summary>
+        /// Lắng nghe tín hiệu
+        /// </summary>
+        private void ListenForDrawSignal()
         {
             connection.On<string, Command, bool>("HandleDrawSignal", (dataa, commandd, isPrevieww) => 
             {
@@ -429,16 +487,50 @@ namespace DoAnPaint
             });
         }
 
-        private void Consuming()
+        private void ListenForMsg()
+        {
+            connection.On<string>("HandleMessage", (mes) =>
+            {
+                MSGQueue.Add((mes, false));
+            });
+        }
+
+        /// <summary>
+        /// Consumer cho luồng vẽ
+        /// </summary>
+        private void DrawConsumer()
         {
             foreach (var item in BOTQueue.GetConsumingEnumerable())
             {
+                canStart.Wait(0);
                 var (dataa, commandd, isPrevieww) = item;
                 isPreview = isPrevieww;
                 tempData = (dataa, commandd);
                 RefreshCanvas(commandd);
             }
         }
+
+        /// <summary>
+        /// Consumer cho luồng tin nhắn
+        /// </summary>
+        private void MsgConsumer()
+        {
+            foreach (var item in MSGQueue.GetConsumingEnumerable())
+            {
+                canStart.Wait(0);
+                var (msg, where) = item;
+                ShowMsg(msg, where);
+            }
+        }
+
+        /*private void Syncing()
+        {
+            connection.On("Sync", () =>
+            {
+                var data = ShowNotiBlock(this, "Is syncing...", "Sync data with others...", canStart, bmp, "1234").Result; 
+                connection.InvokeAsync("SyncingData", data);
+            });
+        }*/
         #endregion
     }
 }
