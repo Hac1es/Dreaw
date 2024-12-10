@@ -29,5 +29,10 @@ namespace Dreaw
             newForm.Show();
             this.Close();
         }
+
+        private void Startform_Load(object sender, EventArgs e)
+        {
+
+        }
     }
 }

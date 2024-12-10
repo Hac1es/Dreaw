@@ -36,33 +36,37 @@
             // 
             // pictureBox2
             // 
-            this.pictureBox2.BackgroundImage = global::Dreaw.Properties.Resources.startbt;
-            this.pictureBox2.Location = new System.Drawing.Point(467, 422);
+            this.pictureBox2.BackgroundImage = global::Dreaw.Properties.Resources.startbt1;
+            this.pictureBox2.Location = new System.Drawing.Point(664, 622);
+            this.pictureBox2.Margin = new System.Windows.Forms.Padding(4);
             this.pictureBox2.Name = "pictureBox2";
-            this.pictureBox2.Size = new System.Drawing.Size(277, 68);
+            this.pictureBox2.Size = new System.Drawing.Size(394, 101);
             this.pictureBox2.TabIndex = 1;
             this.pictureBox2.TabStop = false;
             this.pictureBox2.Click += new System.EventHandler(this.pictureBox2_Click);
             // 
             // pictureBox1
             // 
-            this.pictureBox1.BackgroundImage = global::Dreaw.Properties.Resources.Start;
-            this.pictureBox1.Location = new System.Drawing.Point(0, 0);
+            this.pictureBox1.BackgroundImage = global::Dreaw.Properties.Resources.Start1;
+            this.pictureBox1.Location = new System.Drawing.Point(-4, 0);
+            this.pictureBox1.Margin = new System.Windows.Forms.Padding(4);
             this.pictureBox1.Name = "pictureBox1";
-            this.pictureBox1.Size = new System.Drawing.Size(1225, 670);
+            this.pictureBox1.Size = new System.Drawing.Size(1766, 1001);
             this.pictureBox1.TabIndex = 0;
             this.pictureBox1.TabStop = false;
             // 
             // Startform
             // 
-            this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
+            this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(1218, 668);
+            this.ClientSize = new System.Drawing.Size(1748, 954);
             this.Controls.Add(this.pictureBox2);
             this.Controls.Add(this.pictureBox1);
+            this.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
             this.Name = "Startform";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "Startform";
+            this.Load += new System.EventHandler(this.Startform_Load);
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox2)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).EndInit();
             this.ResumeLayout(false);

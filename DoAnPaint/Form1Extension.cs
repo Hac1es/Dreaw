@@ -186,6 +186,7 @@ namespace DoAnPaint
             }
         }
         #endregion
+        
 
         #region Fields
         private SKBitmap bmp; //Bitmap để vẽ
@@ -427,7 +428,7 @@ namespace DoAnPaint
 
         #region Server Properties
         HubConnection connection; //Kết nối
-        string serverAdd = "https://192.168.202.212:7183/api/hub"; //Địa chỉ Server
+        string serverAdd = "https://localhost:7183/api/hub"; //Địa chỉ Server
         #endregion
 
         #region ServerMethods
