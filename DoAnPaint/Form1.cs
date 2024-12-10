@@ -149,7 +149,7 @@ namespace DoAnPaint
         /// <param name="cursor">Chế độ con trỏ chuột</param>
         public void setCursor(Cursorr cursor)
         {
-            string template = @"..\..\Resources\{0}";
+            string template = @"..\..\..\DoAnPaint\Resources\{0}";
             string where;
             switch (cursor)
             {
