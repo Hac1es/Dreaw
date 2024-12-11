@@ -45,6 +45,7 @@
             this.pictureBox1.Size = new System.Drawing.Size(1220, 652);
             this.pictureBox1.TabIndex = 1;
             this.pictureBox1.TabStop = false;
+            this.pictureBox1.Click += new System.EventHandler(this.pictureBox1_Click);
             // 
             // txtVerificationCode
             // 
@@ -74,6 +75,7 @@
             this.pictureBox2.Size = new System.Drawing.Size(95, 28);
             this.pictureBox2.TabIndex = 7;
             this.pictureBox2.TabStop = false;
+            this.pictureBox2.Click += new System.EventHandler(this.pictureBox2_Click);
             // 
             // code
             // 

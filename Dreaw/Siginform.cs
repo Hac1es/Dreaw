@@ -11,6 +11,8 @@ using System.IO;
 using System.Text.RegularExpressions;
 using System.Data.SqlClient;
 using System.Security.Cryptography;
+using System.Net.Mail;
+using System.Net;
 
 namespace Dreaw
 {
@@ -47,6 +49,7 @@ namespace Dreaw
                 MessageBox.Show("Invalid email format!", "Error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }
+
             try
             {
                 using (SqlConnection connection = new SqlConnection(ConnectionString))
@@ -57,46 +60,21 @@ namespace Dreaw
                         MessageBox.Show("Email already exists!", "Error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                         return;
                     }
-                    string query = @"
-                        INSERT INTO Users (userID, name,  password_hash, email, isDrawing, avatar)
-                        VALUES (NEWID(), @Name,  @PasswordHash, @Email, 0, NULL)";
 
-                    using (SqlCommand command = new SqlCommand(query, connection))
-                    {
-                        command.Parameters.AddWithValue("@Name", name);
-                        command.Parameters.AddWithValue("@PasswordHash", HashPassword(password));
-                        command.Parameters.AddWithValue("@Email", email);
-
-                        int rowsAffected = command.ExecuteNonQuery();
-                        if (rowsAffected > 0)
-                        {
-                            MessageBox.Show("Sign Up Successful!", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                            ClearFields();
-
-                            Loginform newForm = new Loginform();
-                            newForm.Show();
-                            this.Hide();
-                        }
-                        else
-                        {
-                            MessageBox.Show("Sign Up Failed!", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                        }
-                    }
+                    // Chuyển sang form OTP và truyền thông tin người dùng
+                    otp newForm = new otp(name, email, password);
+                    newForm.Show();
+                    this.Hide();
                 }
             }
             catch (SqlException ex)
             {
-                if (ex.Number == 2627) // Handle unique constraint error for duplicate usernames or emails
-                {
-                    MessageBox.Show("This username or email is already registered!", "Error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                }
-                else
-                {
-                    MessageBox.Show("Database error: " + ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                }
+                MessageBox.Show("Database error: " + ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
             ClearFields();
         }
+        
+        
         private bool IsValidEmail(string email)
         {
             // Sử dụng Regex để kiểm tra định dạng email
@@ -109,15 +87,7 @@ namespace Dreaw
             txtEmail.Clear();
             txtPassword.Clear();
         }
-        private string HashPassword(string password)
-        {
-            using (var sha256 = SHA256.Create())
-            {
-                byte[] bytes = Encoding.UTF8.GetBytes(password);
-                byte[] hash = sha256.ComputeHash(bytes);
-                return Convert.ToBase64String(hash);
-            }
-        }
+        
         private bool IsEmailExists(string email, SqlConnection connection)
         {
             string query = "SELECT COUNT(1) FROM Users WHERE email = @Email";
