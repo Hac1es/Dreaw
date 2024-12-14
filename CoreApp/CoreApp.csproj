@@ -272,5 +272,10 @@
   <ItemGroup>
     <None Include="Resources\use2.png" />
   </ItemGroup>
+  <ItemGroup>
+    <Content Include="libSkiaSharp.dll">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

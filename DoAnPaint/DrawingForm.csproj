@@ -440,6 +440,9 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="ILLink\ILLink.Descriptors.LibraryBuild.xml" />
+    <Content Include="libSkiaSharp.dll">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <Content Include="Resources\Crayon.png" />
     <Content Include="Resources\CrayonCursor.png" />
     <Content Include="Resources\Done.png" />
