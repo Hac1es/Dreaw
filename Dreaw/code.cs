@@ -88,7 +88,7 @@ namespace Dreaw
                 // Gửi email
                 await smtp.SendMailAsync(mail);
 
-                MessageBox.Show("OTP has been sent to your email.", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                //MessageBox.Show("OTP has been sent to your email.", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
             catch (Exception ex)
             {

@@ -11,11 +11,14 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.Security.Cryptography;
+using System.Data.SqlClient;
+using System.Xml.Linq;
 
 namespace Dreaw
 {
     public partial class forgetpw : Form
     {
+        private const string ConnectionString = @"Server=LAPTOP-02EOBG92;Database=TEST;Trusted_Connection=True;";
         public forgetpw()
         {
             InitializeComponent();
@@ -39,16 +42,38 @@ namespace Dreaw
 
             try
             {
+                using (SqlConnection connection = new SqlConnection(ConnectionString))
+                {
+                    connection.Open();
+                    if (!IsEmailExists(email, connection))
+                    {
+                        MessageBox.Show("Email doesn't exists!", "Error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                        return;
+                    }
+
+              
+                }
+            }
+            catch (SqlException ex)
+            {
+                MessageBox.Show("Database error: " + ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+
+            try
+            {
+                MessageBox.Show("Verification code sent to your email.", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 // Gửi mã xác thực qua email
                 string verificationCode = GenerateVerificationCode();
+
                 SendVerificationEmail(email, verificationCode);
-                MessageBox.Show("Verification code sent to your email.", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
 
                 // Điều hướng sang form xác thực
                 // Khởi tạo và mở Form2
                 code newForm = new code(verificationCode, email);
                 newForm.Show();
                 this.Hide();
+
+                
             }
             catch (Exception ex)
             {
@@ -70,14 +95,14 @@ namespace Dreaw
             int code = BitConverter.ToInt32(randomNumber, 0) % 1000000;
             return Math.Abs(code).ToString("D6");
         }
-        private void SendVerificationEmail(string email, string verificationCode)
+        private async void SendVerificationEmail(string email, string verificationCode)
         {
             SmtpClient smtp = new SmtpClient("smtp.gmail.com", 587)
             {
                 Credentials = new NetworkCredential("23521458@gm.uit.edu.vn", "echenqlyqkecumoq"),
                 EnableSsl = true
             };
-
+            await Task.Delay(100);
             MailMessage mail = new MailMessage
             {
                 From = new MailAddress("23521458@gm.uit.edu.vn"),
@@ -86,7 +111,19 @@ namespace Dreaw
                 IsBodyHtml = true
             };
             mail.To.Add(email);
-            smtp.Send(mail);
+            await smtp.SendMailAsync(mail);
         }
+
+        private bool IsEmailExists(string email, SqlConnection connection)
+        {
+            string query = "SELECT COUNT(1) FROM Users WHERE email = @Email";
+            using (SqlCommand command = new SqlCommand(query, connection))
+            {
+                command.Parameters.AddWithValue("@Email", email);
+                int count = (int)command.ExecuteScalar();
+                return count > 0;
+            }
+        }
+
     }
 }
