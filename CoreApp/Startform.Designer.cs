@@ -48,6 +48,7 @@
             // pictureBox1
             // 
             this.pictureBox1.BackgroundImage = global::Dreaw.Properties.Resources.Start1;
+            this.pictureBox1.Cursor = System.Windows.Forms.Cursors.Default;
             this.pictureBox1.Location = new System.Drawing.Point(-4, 0);
             this.pictureBox1.Margin = new System.Windows.Forms.Padding(4);
             this.pictureBox1.Name = "pictureBox1";
@@ -62,11 +63,12 @@
             this.ClientSize = new System.Drawing.Size(1748, 954);
             this.Controls.Add(this.pictureBox2);
             this.Controls.Add(this.pictureBox1);
-            this.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.Cursor = System.Windows.Forms.Cursors.Hand;
+            this.Margin = new System.Windows.Forms.Padding(4);
             this.Name = "Startform";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "Startform";
-            this.Load += new System.EventHandler(this.Startform_Load);
+            this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.Startform_FormClosing);
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox2)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).EndInit();
             this.ResumeLayout(false);

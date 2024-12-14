@@ -48,6 +48,7 @@
             // pictureBox3
             // 
             this.pictureBox3.BackgroundImage = global::Dreaw.Properties.Resources.cof2;
+            this.pictureBox3.Cursor = System.Windows.Forms.Cursors.Hand;
             this.pictureBox3.Location = new System.Drawing.Point(376, 522);
             this.pictureBox3.Margin = new System.Windows.Forms.Padding(4);
             this.pictureBox3.Name = "pictureBox3";

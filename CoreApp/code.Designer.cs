@@ -50,6 +50,7 @@
             // pictureBox2
             // 
             this.pictureBox2.BackgroundImage = global::Dreaw.Properties.Resources.resend2;
+            this.pictureBox2.Cursor = System.Windows.Forms.Cursors.Hand;
             this.pictureBox2.Location = new System.Drawing.Point(326, 493);
             this.pictureBox2.Margin = new System.Windows.Forms.Padding(4);
             this.pictureBox2.Name = "pictureBox2";
@@ -60,6 +61,7 @@
             // pictureBox3
             // 
             this.pictureBox3.BackgroundImage = global::Dreaw.Properties.Resources.cof2;
+            this.pictureBox3.Cursor = System.Windows.Forms.Cursors.Hand;
             this.pictureBox3.Location = new System.Drawing.Point(379, 557);
             this.pictureBox3.Margin = new System.Windows.Forms.Padding(4);
             this.pictureBox3.Name = "pictureBox3";
