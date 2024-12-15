@@ -12,11 +12,13 @@ namespace Dreaw.WorldForm
 {
     public partial class userRoom : Form
     {
-        public userRoom(string roomname, string lastModified)
+        public int ID { get; }
+        public userRoom(string roomname, string lastModified, int thisID)
         {
             InitializeComponent();
             roomName.Text = roomname;
             lastModi.Text = $"Last modified: {lastModified}";
+            ID = thisID;
             this.TopLevel = false; // Cho phép Form được thêm vào Container
         }
     }

@@ -20,9 +20,9 @@ namespace Dreaw
         private void pictureBox3_Click(object sender, EventArgs e)
         {
             // Khởi tạo và mở Form2
-            code newForm = new code();
+            code newForm = new code("1234", "a", "b", "c");
             newForm.Show();
-            this.Hide();
+            this.Close();
         }
     }
 }

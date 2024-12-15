@@ -83,10 +83,11 @@
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(239)))), ((int)(((byte)(241)))), ((int)(((byte)(230)))));
-            this.ClientSize = new System.Drawing.Size(1000, 160);
+            this.ClientSize = new System.Drawing.Size(1150, 160);
             this.Controls.Add(this.panel1);
             this.Controls.Add(this.lastModi);
             this.Controls.Add(this.roomName);
+            this.Cursor = System.Windows.Forms.Cursors.Hand;
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.None;
             this.Name = "userRoom";
             this.Text = "userRoom";
