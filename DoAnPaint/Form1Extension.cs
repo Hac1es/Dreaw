@@ -1,5 +1,4 @@
 ﻿using DoAnPaint.Utils;
-using Guna.UI2.AnimatorNS;
 using Microsoft.AspNetCore.SignalR.Client;
 using Newtonsoft.Json;
 using SkiaSharp;
@@ -9,6 +8,7 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
 using System.Net.Http;
+using System.Net.NetworkInformation;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -64,22 +64,6 @@ namespace DoAnPaint
             noti.Location = noti.position;
             noti.Show();
         }
-        /*private static Task<string> ShowNotiBlock(Form form, string what, string msg, SemaphoreSlim canStart, SKBitmap bmp, string chatdata)
-        {
-            return Task.Run(() =>
-            {
-                PopupNoti noti;
-                noti = new PopupNoti(form, what, msg, false);
-                noti.StartPosition = FormStartPosition.Manual;
-                noti.Location = noti.position;
-                noti.ShowDialog();
-                canStart.Wait();
-                SyncData data = new SyncData(bmp, chatdata);
-                noti.Close();
-                canStart.Release();
-                return JsonConvert.SerializeObject(data);
-            });
-        }*/
         /// <summary>
         /// Chỉnh cấu hình pen
         /// </summary>
@@ -186,9 +170,12 @@ namespace DoAnPaint
             }
         }
         #endregion
-        
 
         #region Fields
+        private int RoomID;
+        HubConnection connection; //Kết nối SignalR
+        private readonly string serverIP;
+        CancellationTokenSource cts_source = new CancellationTokenSource();
         private SKBitmap bmp; //Bitmap để vẽ
         private SKCanvas gr; //Graphic chính của Form vẽ
         private Command command; //Danh sách các lệnh(không dùng cái này, ta sẽ dùng property của nó)
@@ -426,51 +413,7 @@ namespace DoAnPaint
         }
         #endregion
 
-        #region Server Properties
-        HubConnection connection; //Kết nối
-        string serverAdd = "https://localhost:7183/api/hub"; //Địa chỉ Server
-        #endregion
-
         #region ServerMethods
-        /// <summary>
-        /// Kết nối tới server
-        /// </summary>
-        private async Task/*<string>*/ ConnectServer()
-        {
-            //var tcs = new TaskCompletionSource<string>(); // Create a TaskCompletionSource
-            connection = new HubConnectionBuilder()
-                .WithUrl(serverAdd, options =>
-                {
-                    options.HttpMessageHandlerFactory = handler =>
-                    {
-                        if (handler is HttpClientHandler clientHandler)
-                            clientHandler.ServerCertificateCustomValidationCallback =
-                                (message, cert, chain, sslPolicyErrors) => true;
-                        return handler;
-                    };
-                })
-                .WithAutomaticReconnect(new[]
-                {
-            TimeSpan.Zero,   // Try reconnecting immediately
-            TimeSpan.FromSeconds(2),
-            TimeSpan.FromSeconds(10),
-            TimeSpan.FromSeconds(30)
-                })
-                .Build();
-
-            // Start the connection
-            await connection.StartAsync();
-
-            /*// Register the event handler
-            connection.On<string>("SyncFromServer", (currentData) =>
-            {
-                tcs.TrySetResult(currentData);
-            });
-
-            // Return the synced data when available (you might need to wait for it)
-            return await tcs.Task;*/
-        }
-
         /// <summary>
         /// Gửi dữ liệu vẽ
         /// </summary>
@@ -490,16 +433,12 @@ namespace DoAnPaint
         /// <summary>
         /// Lắng nghe tín hiệu
         /// </summary>
-        private void ListenForDrawSignal()
+        private void ListenForSignal()
         {
             connection.On<string, Command, bool>("HandleDrawSignal", (dataa, commandd, isPrevieww) => 
             {
                 BOTQueue.Add((dataa, commandd, isPrevieww));
             });
-        }
-
-        private void ListenForMsg()
-        {
             connection.On<string>("HandleMessage", (mes) =>
             {
                 MSGQueue.Add((mes, false));
@@ -534,14 +473,20 @@ namespace DoAnPaint
             }
         }
 
-        /*private void Syncing()
+        private async void GetPing(CancellationToken cts)
         {
-            connection.On("Sync", () =>
+            Ping ping = new Ping();
+            var host = serverIP;
+            while (!cts.IsCancellationRequested)
             {
-                var data = ShowNotiBlock(this, "Is syncing...", "Sync data with others...", canStart, bmp, "1234").Result; 
-                connection.InvokeAsync("SyncingData", data);
-            });
-        }*/
+                var reply = ping.Send(host);
+                label6.BeginInvoke(new Action(() =>
+                {
+                    label6.Text = $"Ping: {reply.RoundtripTime} ms";
+                }));
+                await Task.Delay(3000);
+            }    
+        }
         #endregion
     }
 }

@@ -12,11 +12,9 @@ using SkiaSharp;
 
 using DoAnPaint.Utils;
 using System.IO;
-using Point = System.Drawing.Point;
 using Application = System.Windows.Forms.Application;
 using Sprache;
 using TrackBar = System.Windows.Forms.TrackBar;
-using MessageBox = System.Windows.Forms.MessageBox;
 using Color = System.Drawing.Color;
 using TheArtOfDevHtmlRenderer.Adapters.Entities;
 using static Guna.UI2.Native.WinApi;
@@ -36,13 +34,22 @@ namespace DoAnPaint
 {
     public partial class Form1 : Form
     {
-        public Form1()
+        public Form1(string serverip, HubConnection _conn, int Roomid, SKBitmap btmap = null)
         {
             InitializeComponent();
-            bmp = new SKBitmap(ptbDrawing.Width, ptbDrawing.Height);
+            serverIP = serverip;
+            RoomID = Roomid;
+            var token = cts_source.Token;
+            if (btmap == null)
+                bmp = new SKBitmap(ptbDrawing.Width, ptbDrawing.Height);
+            else
+                bmp = btmap;
+            connection = _conn;
             gr = new SKCanvas(bmp);
             _ = Task.Run(() => DrawConsumer());
             _ = Task.Run(() => MsgConsumer());
+            _ = Task.Run(() => ListenForSignal());
+            _ = Task.Run(() => GetPing(token), token);
             #region Linh tinh
             /*Toàn bộ mọi thứ ở đây là liên quan tới UI
              * Logic: Nó làm 2 thứ:
@@ -528,7 +535,7 @@ namespace DoAnPaint
         //Logout
         private void button1_Click(object sender, EventArgs e)
         {
-            Application.Exit();
+            this.Close();
         }
 
         //Không quan trọng
@@ -573,18 +580,14 @@ namespace DoAnPaint
             return base.ProcessCmdKey(ref msg, keyData);
         }
 
-        private async void Form1_Load(object sender, EventArgs e)
+        private void Form1_Load(object sender, EventArgs e)
         {
-            /*string syncedData = */await ConnectServer();
-            /*if (syncedData != null)
-            {
-                var synced_data = JsonConvert.DeserializeObject<SyncData>(syncedData);
-                gr.DrawBitmap(synced_data.syncBmp, 0, 0);
-                RefreshCanvas(Command.CURSOR);
-            }*/
-            _ = Task.Run(() => ListenForDrawSignal());
-            _ = Task.Run(() => ListenForMsg());
-            /*_ = Task.Run(() => Syncing());*/
+            RoomIDShow.Text = $"Room ID: {RoomID}";
+        }
+
+        private void Form1_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            cts_source.Cancel();
         }
     }
 }

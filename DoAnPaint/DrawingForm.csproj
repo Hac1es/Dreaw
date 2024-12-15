@@ -123,11 +123,9 @@
     </Reference>
     <Reference Include="OpenTK, Version=3.1.0.0, Culture=neutral, PublicKeyToken=bad199fe84eb3df4, processorArchitecture=MSIL">
       <HintPath>..\packages\OpenTK.3.1.0\lib\net20\OpenTK.dll</HintPath>
-      <Private>True</Private>
     </Reference>
     <Reference Include="OpenTK.GLControl, Version=3.1.0.0, Culture=neutral, PublicKeyToken=bad199fe84eb3df4, processorArchitecture=MSIL">
       <HintPath>..\packages\OpenTK.GLControl.3.1.0\lib\net20\OpenTK.GLControl.dll</HintPath>
-      <Private>True</Private>
     </Reference>
     <Reference Include="PresentationCore" />
     <Reference Include="PresentationFramework" />
@@ -135,10 +133,10 @@
       <HintPath>..\packages\SkiaSharp.3.116.1\lib\net462\SkiaSharp.dll</HintPath>
     </Reference>
     <Reference Include="SkiaSharp.Views.Desktop.Common, Version=3.116.0.0, Culture=neutral, PublicKeyToken=0738eb9f132ed756, processorArchitecture=MSIL">
-      <HintPath>..\packages\SkiaSharp.Views.Desktop.Common.3.116.0\lib\net462\SkiaSharp.Views.Desktop.Common.dll</HintPath>
+      <HintPath>..\packages\SkiaSharp.Views.Desktop.Common.3.116.1\lib\net462\SkiaSharp.Views.Desktop.Common.dll</HintPath>
     </Reference>
     <Reference Include="SkiaSharp.Views.WindowsForms, Version=3.116.0.0, Culture=neutral, PublicKeyToken=0738eb9f132ed756, processorArchitecture=MSIL">
-      <HintPath>..\packages\SkiaSharp.Views.WindowsForms.3.116.0\lib\net462\SkiaSharp.Views.WindowsForms.dll</HintPath>
+      <HintPath>..\packages\SkiaSharp.Views.WindowsForms.3.116.1\lib\net462\SkiaSharp.Views.WindowsForms.dll</HintPath>
     </Reference>
     <Reference Include="Sprache, Version=2.3.1.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\Sprache.2.3.1\lib\net45\Sprache.dll</HintPath>

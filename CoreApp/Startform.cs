@@ -22,17 +22,13 @@ namespace Dreaw
             // Khởi tạo và mở Form2
             Loginform newForm = new Loginform();
 
-            // Đăng ký sự kiện FormClosed để thoát ứng dụng khi Form2 đóng
-            newForm.FormClosed += (s, args) => Application.Exit();
-
-            // Hiển thị Form2 và đóng Form1
+            // Hiển thị Form2
             newForm.Show();
-            this.Close();
         }
 
-        private void Startform_Load(object sender, EventArgs e)
+        private void Startform_FormClosing(object sender, FormClosingEventArgs e)
         {
-
+            Application.Exit();
         }
     }
 }
