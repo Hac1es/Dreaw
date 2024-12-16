@@ -20,12 +20,12 @@ namespace Server.Controllers
                 return BadRequest("Invalid request");
             }
             string email = request.Email;
-            var success = TotheMoon(email);
+            var (success, exists) = TotheMoon(email);
             if (!success)
             {
-                return NotFound();
+                return Problem();
             }
-            else
+            else if (exists) 
             {
                 var OTP = GenerateVerificationCode();
                 var result = await SendVerificationEmail(email, OTP);
@@ -34,6 +34,10 @@ namespace Server.Controllers
                     return Problem();
                 }
                 return Ok(new { Message = "OTP has been sent to your email.", OTP });
+            }
+            else
+            {
+                return NotFound();
             }
         }
 
@@ -66,7 +70,7 @@ namespace Server.Controllers
             return Math.Abs(code).ToString("D6");
         }
 
-        private bool TotheMoon(string email)
+        private (bool, bool) TotheMoon(string email)
         {
             try
             {
@@ -75,14 +79,14 @@ namespace Server.Controllers
                     connection.Open();
                     if (IsEmailExists(email, connection))
                     {
-                        return true;
+                        return (true, true);
                     }
-                    return true;
+                    return (true, false);
                 }
             }
             catch
             {
-                return false;
+                return (false, false);
             }
         }
 

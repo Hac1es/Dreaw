@@ -95,7 +95,7 @@ namespace Dreaw
             } 
             else
             {
-                MessageBox.Show("OTP Verification Completed!", "Success", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show("OTP Verification Completed!", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 newpw newpw = new newpw(email);
                 newpw.Show();
                 this.Close();
