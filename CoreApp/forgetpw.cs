@@ -65,7 +65,7 @@ namespace Dreaw
                     newForm.Show();
                     this.Close();
                 }
-                else if (response.StatusCode == System.Net.HttpStatusCode.Conflict)
+                else if (response.StatusCode == System.Net.HttpStatusCode.NotFound)
                 {
                     MessageBox.Show("Email not exists! Please sign up!");
                     Cursor.Current = Cursors.Default;
