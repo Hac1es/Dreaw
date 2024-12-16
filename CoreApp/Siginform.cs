@@ -70,7 +70,7 @@ namespace Dreaw
                     var responseContent = await response.Content.ReadAsStringAsync();
                     var responseObject = JsonConvert.DeserializeObject<dynamic>(responseContent);
                     string otp = responseObject?.otp;
-                    code newForm = new code(otp, name, email, password);
+                    code newForm = new code(otp, name, email, password, "signup");
                     isSending = false;
                     Cursor.Current = Cursors.Default;
                     MessageBox.Show("A new OTP has been sent to your email.", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);

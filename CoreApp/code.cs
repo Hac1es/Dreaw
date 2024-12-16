@@ -15,6 +15,7 @@ namespace Dreaw
 {
     public partial class code : Form
     {
+        string Case;
         string otp;
         bool isSending;
         string name;
@@ -23,7 +24,7 @@ namespace Dreaw
         bool _isTicking;
         int timer = 0;
         const string serverAdd = "https://localhost:7183";
-        public code(string otp, string name, string email, string password)
+        public code(string otp, string name, string email, string password, string @case)
         {
             InitializeComponent();
             this.otp = otp;
@@ -32,6 +33,18 @@ namespace Dreaw
             this.password = password;
             waittoResend.Start();
             _isTicking = true;
+            Case = @case;
+        }
+        public code(string otp, string email, string @case)
+        {
+            InitializeComponent();
+            this.otp = otp;
+            this.name = "";
+            this.email = email;
+            this.password = "";
+            waittoResend.Start();
+            _isTicking = true;
+            Case = @case;
         }
 
         private async void pictureBox3_Click(object sender, EventArgs e)
@@ -46,36 +59,46 @@ namespace Dreaw
                 MessageBox.Show("OTP is not correct!");
                 return;
             }
-            // Tạo dữ liệu cần gửi
-            var requestData = new
+            if (Case == "signup")
             {
-                Username = name,
-                Email = email,
-                Password = password
-            };
-            using (var client = new HttpClient())
+                // Tạo dữ liệu cần gửi
+                var requestData = new
+                {
+                    Username = name,
+                    Email = email,
+                    Password = password
+                };
+                using (var client = new HttpClient())
+                {
+                    isSending = true;
+                    var jsonRequest = JsonConvert.SerializeObject(requestData);
+                    var content = new StringContent(jsonRequest, Encoding.UTF8, "application/json");
+                    Cursor = Cursors.WaitCursor;
+                    var response = await client.PostAsync($"{serverAdd}/api/finishsignup", content);
+                    if (response.IsSuccessStatusCode)
+                    {
+                        MessageBox.Show("Sign Up Successful!", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                        // Chuyển sang form Login
+                        Loginform loginForm = new Loginform();
+                        isSending = false;
+                        Cursor = Cursors.Default;
+                        loginForm.Show();
+                        this.Close();
+                    }
+                    else
+                    {
+                        isSending = false;
+                        Cursor = Cursors.Default;
+                        MessageBox.Show("Sign Up Failed!", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    }
+                }
+            } 
+            else
             {
-                isSending = true;
-                var jsonRequest = JsonConvert.SerializeObject(requestData);
-                var content = new StringContent(jsonRequest, Encoding.UTF8, "application/json");
-                Cursor = Cursors.WaitCursor;
-                var response = await client.PostAsync($"{serverAdd}/api/finishsignup", content);
-                if (response.IsSuccessStatusCode)
-                {
-                    MessageBox.Show("Sign Up Successful!", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                    // Chuyển sang form Login
-                    Loginform loginForm = new Loginform();
-                    isSending = false;
-                    Cursor = Cursors.Default;
-                    loginForm.Show();
-                    this.Close();
-                }
-                else
-                {
-                    isSending = false;
-                    Cursor = Cursors.Default;
-                    MessageBox.Show("Sign Up Failed!", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                }
+                MessageBox.Show("OTP Verification Completed!", "Success", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                newpw newpw = new newpw(email);
+                newpw.Show();
+                this.Close();
             }
         }
 
@@ -90,12 +113,17 @@ namespace Dreaw
                 };
                 using (var client = new HttpClient())
                 {
+                    isSending = true;
                     var jsonRequest = JsonConvert.SerializeObject(requestData);
                     var content = new StringContent(jsonRequest, Encoding.UTF8, "application/json");
                     Cursor = Cursors.WaitCursor;
                     var response = await client.PostAsync($"{serverAdd}/api/resendotp", content);
                     if (response.IsSuccessStatusCode)
                     {
+                        var responseContent = await response.Content.ReadAsStringAsync();
+                        var responseObject = JsonConvert.DeserializeObject<dynamic>(responseContent);
+                        otp = responseObject?.otp;
+                        isSending = false;
                         MessageBox.Show("A new OTP has been sent to your email.", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
                         Cursor = Cursors.Default;
                         timer = 0;

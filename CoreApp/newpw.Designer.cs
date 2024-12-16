@@ -28,22 +28,22 @@
         /// </summary>
         private void InitializeComponent()
         {
-            this.textBox1 = new System.Windows.Forms.TextBox();
+            this.txtPass = new System.Windows.Forms.TextBox();
             this.pictureBox3 = new System.Windows.Forms.PictureBox();
             this.pictureBox1 = new System.Windows.Forms.PictureBox();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox3)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
             this.SuspendLayout();
             // 
-            // textBox1
+            // txtPass
             // 
-            this.textBox1.Cursor = System.Windows.Forms.Cursors.IBeam;
-            this.textBox1.Font = new System.Drawing.Font("Microsoft Sans Serif", 22.8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.textBox1.Location = new System.Drawing.Point(328, 420);
-            this.textBox1.Margin = new System.Windows.Forms.Padding(4);
-            this.textBox1.Name = "textBox1";
-            this.textBox1.Size = new System.Drawing.Size(385, 51);
-            this.textBox1.TabIndex = 8;
+            this.txtPass.Cursor = System.Windows.Forms.Cursors.IBeam;
+            this.txtPass.Font = new System.Drawing.Font("Microsoft Sans Serif", 22.8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.txtPass.Location = new System.Drawing.Point(328, 420);
+            this.txtPass.Margin = new System.Windows.Forms.Padding(4);
+            this.txtPass.Name = "txtPass";
+            this.txtPass.Size = new System.Drawing.Size(385, 51);
+            this.txtPass.TabIndex = 8;
             // 
             // pictureBox3
             // 
@@ -55,6 +55,7 @@
             this.pictureBox3.Size = new System.Drawing.Size(214, 36);
             this.pictureBox3.TabIndex = 7;
             this.pictureBox3.TabStop = false;
+            this.pictureBox3.Click += new System.EventHandler(this.pictureBox3_Click);
             // 
             // pictureBox1
             // 
@@ -71,7 +72,7 @@
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(1748, 954);
-            this.Controls.Add(this.textBox1);
+            this.Controls.Add(this.txtPass);
             this.Controls.Add(this.pictureBox3);
             this.Controls.Add(this.pictureBox1);
             this.Margin = new System.Windows.Forms.Padding(4);
@@ -89,6 +90,6 @@
 
         private System.Windows.Forms.PictureBox pictureBox1;
         private System.Windows.Forms.PictureBox pictureBox3;
-        private System.Windows.Forms.TextBox textBox1;
+        private System.Windows.Forms.TextBox txtPass;
     }
 }

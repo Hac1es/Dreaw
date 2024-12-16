@@ -1,59 +1,53 @@
-﻿using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
+using Server.Models;
 using SignalRServer.Models;
 using System.Data.SqlClient;
-using static System.Net.WebRequestMethods;
-using System.Xml.Linq;
-using Server.Models;
-using Umbraco.Core.Models.Membership;
 using System.Net.Mail;
 using System.Net;
+using System.Security.Cryptography;
 
 namespace Server.Controllers
 {
     [ApiController]
-    public class SignupController : ControllerBase
+    public class ForgotpwController : ControllerBase
     {
-        [Route("api/signup")]
+        [Route("api/forgetpw")]
         [HttpPost]
-        public async Task<IActionResult> InitializeSignup([FromBody] UserModel request)
+        public async Task<IActionResult> InitializeForgotpw([FromBody] UserModel request)
         {
             if (request == null)
             {
                 return BadRequest("Invalid request");
             }
             string email = request.Email;
-            var (success, msg) = TotheMoon(email);
+            var success = TotheMoon(email);
             if (!success)
             {
-                if (msg == "Email exists!")
-                    return Conflict();
-                else return Problem(msg);
+                return NotFound();
             }
             else
             {
-                var OTP = GenerateOTP();
-                var result = await SendOTPEmail(email, OTP);
+                var OTP = GenerateVerificationCode();
+                var result = await SendVerificationEmail(email, OTP);
                 if (!result)
                 {
                     return Problem();
-                }    
+                }
                 return Ok(new { Message = "OTP has been sent to your email.", OTP });
             }
         }
 
-        [Route("api/finishsignup")]
+        [Route("api/updatepw")]
         [HttpPost]
-        public async Task<IActionResult> FinishSignup([FromBody] UserModel request)
+        public async Task<IActionResult> FinishForgotPw([FromBody] UserModel request)
         {
             if (request == null)
             {
                 return BadRequest("Invalid request");
             }
             string email = request.Email;
-            string username = request.Username!;
             string password = request.Password!;
-            var result = await StoreUser(username, email, password);
+            var result = await UpdatePw(email, password);
             if (result)
             {
                 return Ok();
@@ -64,21 +58,15 @@ namespace Server.Controllers
             }
         }
 
-        [Route("api/resendotp")]
-        [HttpPost]
-        public async Task<IActionResult> ResendOTP([FromBody] UserModel request)
+        private string GenerateVerificationCode()
         {
-            string email = request.Email;
-            var OTP = GenerateOTP();
-            var result = await SendOTPEmail(email, OTP);
-            if (!result)
-            {
-                return Problem();
-            }
-            return Ok(new { Message = "OTP has been sent to your email.", OTP });
+            byte[] randomNumber = new byte[4];
+            RandomNumberGenerator.Fill(randomNumber);
+            int code = BitConverter.ToInt32(randomNumber, 0) % 1000000;
+            return Math.Abs(code).ToString("D6");
         }
 
-        private (bool, string) TotheMoon(string email)
+        private bool TotheMoon(string email)
         {
             try
             {
@@ -87,14 +75,14 @@ namespace Server.Controllers
                     connection.Open();
                     if (IsEmailExists(email, connection))
                     {
-                        return (false, "Email exists!");
+                        return true;
                     }
-                    return (true, "");
+                    return true;
                 }
             }
-            catch (SqlException ex)
+            catch
             {
-                return (false, $"Database error: {ex.Message}");
+                return false;
             }
         }
 
@@ -109,34 +97,24 @@ namespace Server.Controllers
             }
         }
 
-        private string GenerateOTP()
+        private async Task<bool> SendVerificationEmail(string email, string verificationCode)
         {
-            Random random = new Random();
-            return random.Next(100000, 999999).ToString(); // Tạo mã OTP 6 chữ số
-        }
-
-        private async Task<bool> SendOTPEmail(string email, string otp)
-        {
-            await Task.Delay(100); // Giới thiệu một độ trễ nhỏ nếu cần
             try
             {
-                // Cấu hình SMTP
                 SmtpClient smtp = new SmtpClient("smtp.gmail.com", 587)
                 {
-                    Credentials = new NetworkCredential("23521458@gm.uit.edu.vn", "mnlwwrbfbojbmcza"), // Chuyển thông tin này ra cấu hình
+                    Credentials = new NetworkCredential("23521458@gm.uit.edu.vn", "echenqlyqkecumoq"),
                     EnableSsl = true
                 };
-                // Cấu hình email
+                await Task.Delay(100);
                 MailMessage mail = new MailMessage
                 {
                     From = new MailAddress("23521458@gm.uit.edu.vn"),
-                    Subject = "OTP Verification",
-                    Body = $"Your OTP code is: {otp}",
+                    Subject = "Password Reset Code",
+                    Body = $"Your password reset code is: {verificationCode}",
                     IsBodyHtml = true
                 };
                 mail.To.Add(email);
-
-                // Gửi email
                 await smtp.SendMailAsync(mail);
                 return true;
             }
@@ -156,24 +134,21 @@ namespace Server.Controllers
             }
         }
 
-        private async Task<bool> StoreUser(string _name, string _email, string _password)
+        private async Task<bool> UpdatePw(string _userEmail, string newPassword)
         {
             try
             {
                 using (SqlConnection connection = new SqlConnection(General.SQLServer))
                 {
-                    connection.Open();
-                    // Lưu thông tin vào cơ sở dữ liệu sau khi OTP khớp
-                    string query = @"
-                            INSERT INTO Users (userID, name, password_hash, email, isDrawing, avatar)
-                            VALUES (NEWID(), @Name, @PasswordHash, @Email, 0, NULL)";
+                    await connection.OpenAsync();
+                    string query = "UPDATE Users SET password_hash = @PasswordHash WHERE email = @Email";
+
                     using (SqlCommand command = new SqlCommand(query, connection))
                     {
-                        command.Parameters.AddWithValue("@Name", _name);
-                        command.Parameters.AddWithValue("@PasswordHash", HashPassword(_password));
-                        command.Parameters.AddWithValue("@Email", _email);
+                        command.Parameters.AddWithValue("@PasswordHash", HashPassword(newPassword));
+                        command.Parameters.AddWithValue("@Email", _userEmail);
 
-                        int rowsAffected = await command.ExecuteNonQueryAsync();
+                        var rowsAffected = await command.ExecuteNonQueryAsync();
                         if (rowsAffected > 0)
                         {
                             return true;
@@ -185,9 +160,8 @@ namespace Server.Controllers
                     }
                 }
             }
-            catch(Exception ex) 
+            catch
             {
-                Console.WriteLine(ex.Message);
                 return false;
             }
         }
