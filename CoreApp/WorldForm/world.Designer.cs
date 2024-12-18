@@ -28,6 +28,7 @@
         /// </summary>
         private void InitializeComponent()
         {
+            this.components = new System.ComponentModel.Container();
             this.pictureBox5 = new System.Windows.Forms.PictureBox();
             this.pictureBox4 = new System.Windows.Forms.PictureBox();
             this.pictureBox2 = new System.Windows.Forms.PictureBox();
@@ -35,13 +36,14 @@
             this.pictureBox1 = new System.Windows.Forms.PictureBox();
             this.userRoomList = new System.Windows.Forms.FlowLayoutPanel();
             this.usrname = new System.Windows.Forms.Label();
-            this.pictureBox6 = new System.Windows.Forms.PictureBox();
+            this.Avatarr = new System.Windows.Forms.PictureBox();
+            this.toolTip1 = new System.Windows.Forms.ToolTip(this.components);
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox5)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox4)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox2)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox3)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.pictureBox6)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.Avatarr)).BeginInit();
             this.SuspendLayout();
             // 
             // pictureBox5
@@ -113,30 +115,31 @@
             // 
             // usrname
             // 
-            this.usrname.AutoSize = true;
+            this.usrname.AutoEllipsis = true;
             this.usrname.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(254)))), ((int)(((byte)(226)))), ((int)(((byte)(126)))));
             this.usrname.Font = new System.Drawing.Font("Segoe UI", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.usrname.Location = new System.Drawing.Point(40, 154);
+            this.usrname.Location = new System.Drawing.Point(39, 154);
             this.usrname.Name = "usrname";
             this.usrname.Size = new System.Drawing.Size(108, 28);
             this.usrname.TabIndex = 11;
             this.usrname.Text = "Tùng Goku";
+            this.usrname.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             // 
-            // pictureBox6
+            // Avatarr
             // 
-            this.pictureBox6.BackColor = System.Drawing.Color.Transparent;
-            this.pictureBox6.Location = new System.Drawing.Point(23, 5);
-            this.pictureBox6.Name = "pictureBox6";
-            this.pictureBox6.Size = new System.Drawing.Size(140, 130);
-            this.pictureBox6.TabIndex = 12;
-            this.pictureBox6.TabStop = false;
+            this.Avatarr.BackColor = System.Drawing.Color.Transparent;
+            this.Avatarr.Location = new System.Drawing.Point(23, 5);
+            this.Avatarr.Name = "Avatarr";
+            this.Avatarr.Size = new System.Drawing.Size(140, 130);
+            this.Avatarr.TabIndex = 12;
+            this.Avatarr.TabStop = false;
             // 
             // world
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(1748, 954);
-            this.Controls.Add(this.pictureBox6);
+            this.Controls.Add(this.Avatarr);
             this.Controls.Add(this.usrname);
             this.Controls.Add(this.userRoomList);
             this.Controls.Add(this.pictureBox5);
@@ -148,14 +151,14 @@
             this.Name = "world";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "world";
+            this.Load += new System.EventHandler(this.world_Load);
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox5)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox4)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox2)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox3)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.pictureBox6)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.Avatarr)).EndInit();
             this.ResumeLayout(false);
-            this.PerformLayout();
 
         }
 
@@ -168,6 +171,7 @@
         private System.Windows.Forms.PictureBox pictureBox5;
         private System.Windows.Forms.FlowLayoutPanel userRoomList;
         private System.Windows.Forms.Label usrname;
-        private System.Windows.Forms.PictureBox pictureBox6;
+        private System.Windows.Forms.PictureBox Avatarr;
+        private System.Windows.Forms.ToolTip toolTip1;
     }
 }

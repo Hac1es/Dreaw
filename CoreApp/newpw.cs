@@ -25,6 +25,7 @@ namespace Dreaw
         }
         private async void pictureBox3_Click(object sender, EventArgs e)
         {
+            //Kiểm tra đầu vào
             if (isSending)
             {
                 MessageBox.Show("Completed the last request first!");
@@ -53,7 +54,7 @@ namespace Dreaw
                 var jsonRequest = JsonConvert.SerializeObject(requestData);
                 var content = new StringContent(jsonRequest, Encoding.UTF8, "application/json");
                 Cursor.Current = Cursors.WaitCursor;
-                var response = await client.PostAsync($"{serverAdd}/api/updatepw", content);
+                var response = await client.PostAsync($"{serverAdd}/api/updatepw", content); //Y chang, chỉ khác endpoint
                 if (response.IsSuccessStatusCode)
                 {
                     MessageBox.Show("Password updated successfully! Please log in with your new password.", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);

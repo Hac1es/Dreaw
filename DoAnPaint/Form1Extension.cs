@@ -251,12 +251,13 @@ namespace DoAnPaint
         }
         #endregion
         BlockingCollection<(string, Command, bool)> BOTQueue = new BlockingCollection<(string, Command, bool)>(); //Queue data vẽ
-        BlockingCollection<(string, bool)> MSGQueue = new BlockingCollection<(string, bool)>();
+        BlockingCollection<(string, bool, string)> MSGQueue = new BlockingCollection<(string, bool, string)>();
         SKPaint pen = new SKPaint { IsAntialias = true }; //Bút chì
         SKPaint penenter = new SKPaint { IsAntialias = true, Style = SKPaintStyle.Stroke }; //Bút vẽ hình
         SKPaint crayon = new SKPaint { IsAntialias = true }; //Sáp màu
         SKPaint dotted_pen = new SKPaint { Color = SKColors.Black, Style = SKPaintStyle.Stroke, StrokeWidth = 1, IsAntialias = true, PathEffect = SKPathEffect.CreateDash(new float[] { 10, 5 }, 0) }; //Bút dùng trong chế độ chọn
         (string, Command) tempData = (null, Command.CURSOR); //Dữ liệu tạm
+        string userName; //Tên người dùng
         #endregion
 
         #region Draw Methods
@@ -393,20 +394,24 @@ namespace DoAnPaint
             box.AppendText(text);
             box.SelectionColor = box.ForeColor; // Trở về màu mặc định
         }
-        private void ShowMsg(string msg, bool where)
+        private void ShowMsg(string msg, bool where, string who)
         {
             if (!where && !chatPanel.Visible) 
-                ShowNoti(this, "New Message!", $"Dreawer: {msg}");
+                ShowNoti(this, "New Message!", $"{who}: {msg}");
             MessageBox.Invoke(new Action(() =>
             {
-                if (where)
+                if (string.IsNullOrEmpty(who))
+                {
+                    AppenddText(MessageBox, $"{msg}{Environment.NewLine}", Color.Blue);
+                }    
+                else if (where)
                 {
                     AppenddText(MessageBox, "You: ", Color.Indigo);
                     AppenddText(MessageBox, $"{msg}{Environment.NewLine}", MessageBox.ForeColor);
                 }
                 else
                 {
-                    AppenddText(MessageBox, "Dreawer: ", Color.SteelBlue);
+                    AppenddText(MessageBox, $"{who}: ", Color.SteelBlue);
                     AppenddText(MessageBox, $"{msg}{Environment.NewLine}", MessageBox.ForeColor);
                 }
             }));
@@ -425,9 +430,9 @@ namespace DoAnPaint
             await connection.InvokeAsync("BroadcastDraw", data, command, isPreview);
         }
 
-        private async void SendMsg(string msg)
+        private async void SendMsg(string msg, string name)
         {
-            await connection.InvokeAsync("BroadcastMsg", msg);
+            await connection.InvokeAsync("BroadcastMsg", msg, name);
         }
 
         /// <summary>
@@ -439,9 +444,9 @@ namespace DoAnPaint
             {
                 BOTQueue.Add((dataa, commandd, isPrevieww));
             });
-            connection.On<string>("HandleMessage", (mes) =>
+            connection.On<string, string>("HandleMessage", (mes, who) =>
             {
-                MSGQueue.Add((mes, false));
+                MSGQueue.Add((mes, false, who));
             });
         }
 
@@ -468,8 +473,8 @@ namespace DoAnPaint
             foreach (var item in MSGQueue.GetConsumingEnumerable())
             {
                 canStart.Wait(0);
-                var (msg, where) = item;
-                ShowMsg(msg, where);
+                var (msg, where, who) = item;
+                ShowMsg(msg, where, who);
             }
         }
 

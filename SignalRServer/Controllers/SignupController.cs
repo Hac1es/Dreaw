@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using SignalRServer.Models;
-using System.Data.SqlClient;
+using Microsoft.Data.SqlClient;
 using static System.Net.WebRequestMethods;
 using System.Xml.Linq;
 using Server.Models;

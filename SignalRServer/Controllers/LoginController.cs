@@ -1,8 +1,9 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Newtonsoft.Json;
 using Server.Models;
 using SignalRServer.Models;
-using System.Data.SqlClient;
+using Microsoft.Data.SqlClient;
 
 namespace Server.Controllers
 {
@@ -19,38 +20,47 @@ namespace Server.Controllers
             }
             string email = request.Email;
             string password = request.Password!;
-            var result = await LoginQuery(email, password);
+            var (result, userName) = await LoginQuery(email, password);
             if (result)
             {
-                return Ok();
+                return Ok(userName);
             }
             else
             {
-                return Unauthorized();
+                if (userName == "Invalid credentials")
+                    return Unauthorized();
+                else
+                    return Problem();
             }
         }
 
-        private async Task<bool> LoginQuery(string email, string password)
+        private async Task<(bool, string)> LoginQuery(string email, string password)
         {
             try
             {
                 using (SqlConnection connection = new SqlConnection(General.SQLServer))
                 {
-                    connection.Open();
-                    string query = "SELECT COUNT(1) FROM Users WHERE email = @Email AND password_hash = @PasswordHash";
+                    await connection.OpenAsync();
+                    string query = "SELECT name, userID FROM Users WHERE email = @Email AND password_hash = @PasswordHash";
                     using (SqlCommand command = new SqlCommand(query, connection))
                     {
                         command.Parameters.AddWithValue("@Email", email);
                         command.Parameters.AddWithValue("@PasswordHash", HashPassword(password));
-                        Console.WriteLine(HashPassword(password));
-                        var count = await command.ExecuteScalarAsync();
-                        if ((int)count! == 1)
+
+                        using (SqlDataReader reader = await command.ExecuteReaderAsync())
                         {
-                            return true;
-                        }
-                        else
-                        {
-                            return false;
+                            if (await reader.ReadAsync())
+                            {
+                                string userName = reader["name"].ToString()!;
+                                string userID = reader["userID"].ToString()!;
+                                // Trả về JSON chứa thông tin người dùng
+                                return (true, JsonConvert.SerializeObject(new { name = userName, userID = userID }));
+                            }
+                            else
+                            {
+                                // Email hoặc password không đúng
+                                return (false, "Invalid credentials");
+                            }
                         }
                     }
                 }
@@ -58,7 +68,7 @@ namespace Server.Controllers
             catch(Exception ex) 
             {
                 Console.WriteLine(ex.Message);
-                return false;
+                return (false, "");
             }
         }
 

@@ -23,8 +23,11 @@ namespace Dreaw
         const string serverAdd = "https://localhost:7183/api/hub"; //Địa chỉ Server
         const string serverIP = "127.0.0.1";
         List<userRoom> userRooms = new List<userRoom>();
-        int selectedRoom = 0;
-        public world()
+        int selectedRoom = -1;
+        readonly string usrrname;
+        readonly string avtPic;
+        readonly string userID;
+        public world(string usrrname, string userID, string avtPic = null)
         {
             InitializeComponent();
             userRooms.Add(new userRoom("MU -0.5", "15/12/2024", 3234));
@@ -53,6 +56,15 @@ namespace Dreaw
                 };
                 room.Show();
             }
+            var roommm = userRooms.FirstOrDefault();
+            if (roommm != null)
+            {
+                roommm.BackColor = Color.LightYellow;
+                selectedRoom = roommm.ID;
+            }
+            this.usrrname = usrrname;
+            this.avtPic = avtPic;
+            this.userID = userID;
         }
 
         private async void pictureBox4_Click(object sender, EventArgs e)
@@ -61,15 +73,15 @@ namespace Dreaw
             {
                 is_join_a_room = true;
                 Cursor = Cursors.WaitCursor;
-                if (selectedRoom == 0)
+                if (selectedRoom == -1)
                 {
                     Cursor = Cursors.Default;
                     return;
                 }
-                var completed = await ConnectServer();
+                var completed = await ConnectServer(selectedRoom, userID, usrrname);
                 if (completed)
                 {
-                    DoAnPaint.Form1 drawingpanel = new DoAnPaint.Form1(serverIP, connection, selectedRoom);
+                    DoAnPaint.Form1 drawingpanel = new DoAnPaint.Form1(serverIP, connection, selectedRoom, usrrname);
                     drawingpanel.Show();
                 }
                 else
@@ -89,10 +101,10 @@ namespace Dreaw
         /// <summary>
         /// Kết nối tới server
         /// </summary>
-        private async Task<bool> ConnectServer()
+        private async Task<bool> ConnectServer(int room, string userID, string usrname)
         {
             connection = new HubConnectionBuilder()
-                .WithUrl(serverAdd, options =>
+                .WithUrl($"{serverAdd}?room={room}&userID={userID}&name={usrname}", options =>
                 {
                     options.HttpMessageHandlerFactory = handler =>
                     {
@@ -110,7 +122,6 @@ namespace Dreaw
             TimeSpan.FromSeconds(30)
                 })
                 .Build();
-
             try
             {
                 // Start the connection
@@ -129,12 +140,17 @@ namespace Dreaw
             {
                 is_join_a_room = true;
                 Cursor = Cursors.WaitCursor;
-                var completed = await ConnectServer();
+                if (selectedRoom == -1)
+                {
+                    Cursor = Cursors.Default;
+                    return;
+                }
+                var completed = await ConnectServer(selectedRoom, userID, usrrname);
                 if (completed)
                 {
                     Random random = new Random();
                     selectedRoom = random.Next(1000, 10000); // Sinh số từ 1000 đến 9999
-                    DoAnPaint.Form1 drawingpanel = new DoAnPaint.Form1(serverIP, connection, selectedRoom);
+                    DoAnPaint.Form1 drawingpanel = new DoAnPaint.Form1(serverIP, connection, selectedRoom, usrrname);
                     drawingpanel.Show();
                 }
                 else
@@ -160,15 +176,15 @@ namespace Dreaw
                 var codeForm = new enterCode();
                 codeForm.ShowDialog();
                 selectedRoom = codeForm.GetCode();
-                if (selectedRoom == 0)
+                if (selectedRoom == -1)
                 {
                     Cursor = Cursors.Default;
                     return;
                 }
-                var completed = await ConnectServer();
+                var completed = await ConnectServer(selectedRoom, userID, usrrname);
                 if (completed)
                 {
-                    DoAnPaint.Form1 drawingpanel = new DoAnPaint.Form1(serverIP, connection, selectedRoom);
+                    DoAnPaint.Form1 drawingpanel = new DoAnPaint.Form1(serverIP, connection, selectedRoom, usrrname);
                     drawingpanel.Show();
                 }
                 else
@@ -188,6 +204,46 @@ namespace Dreaw
         private void pictureBox3_Click(object sender, EventArgs e)
         {
             this.Close();
+        }
+
+        private void world_Load(object sender, EventArgs e)
+        {
+            if (string.IsNullOrEmpty(avtPic))
+                Avatarr.Visible = false;
+            AdjustFontSize(usrname, usrrname);
+            usrname.Text = usrrname;
+            if (IsTextTruncated(usrname))
+            {
+                // Thiết lập ToolTip một lần duy nhất
+                toolTip1.SetToolTip(usrname, usrname.Text);
+            }    
+        }
+
+        /// <summary>
+        /// Tính toán cỡ chữ
+        /// </summary>
+        private void AdjustFontSize(Label label, string text)
+        {
+            float fontSize = 20; // Cỡ chữ ban đầu
+            SizeF textSize;
+            var graphics = label.CreateGraphics();
+            var font = new Font(label.Font.FontFamily, fontSize);
+
+            do
+            {
+                font = new Font(label.Font.FontFamily, fontSize);
+                textSize = graphics.MeasureString(text, font);
+                fontSize--;
+            }
+            while ((textSize.Width > label.Width || textSize.Height > label.Height) && fontSize > 8);
+            label.Font = font;
+        }
+
+        // Hàm kiểm tra văn bản có bị cắt không
+        private bool IsTextTruncated(Label label)
+        {
+            Size textSize = TextRenderer.MeasureText(label.Text, label.Font);
+            return textSize.Width > label.Width || textSize.Height > label.Height;
         }
     }
 }

@@ -41,7 +41,6 @@ namespace Dreaw
                 MessageBox.Show("Invalid email format!", "Error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }
-            // Tạo dữ liệu cần gửi
             var requestData = new
             {
                 Email = email

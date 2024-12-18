@@ -34,7 +34,7 @@ namespace DoAnPaint
 {
     public partial class Form1 : Form
     {
-        public Form1(string serverip, HubConnection _conn, int Roomid, SKBitmap btmap = null)
+        public Form1(string serverip, HubConnection _conn, int Roomid, string userName, SKBitmap btmap = null)
         {
             InitializeComponent();
             serverIP = serverip;
@@ -46,6 +46,7 @@ namespace DoAnPaint
                 bmp = btmap;
             connection = _conn;
             gr = new SKCanvas(bmp);
+            this.userName = userName;
             _ = Task.Run(() => DrawConsumer());
             _ = Task.Run(() => MsgConsumer());
             _ = Task.Run(() => ListenForSignal());
@@ -571,8 +572,8 @@ namespace DoAnPaint
             // Xử lý Enter khi chatPanel hiển thị
             if (keyData == Keys.Enter && chatPanel.Visible)
             {
-                MSGQueue.Add((msgBox.Text, true));
-                SendMsg(msgBox.Text);
+                MSGQueue.Add((msgBox.Text, true, ""));
+                SendMsg(msgBox.Text, userName);
                 msgBox.Clear();
                 return true; // Chặn xử lý tiếp theo
             }
