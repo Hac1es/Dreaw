@@ -16,8 +16,10 @@ namespace Dreaw
 {
     public partial class Siginform : Form
     {
-        const string serverAdd = "https://localhost:7183";
-        bool isSending = false;
+        const string serverAdd = "https://localhost:7183"; //Địa chỉ server
+        bool isSending = false; //Cái isSending này giống nhau ở nhiều form, nên tui viết
+        //1 lần thôi:D Nó tượng trưng cho việc đã gửi request lên server chưa(vì request cần thời 
+        //gian để xử lý). Nếu nó là true, sẽ chặn việc gửi request đi tiếp
         public Siginform()
         {
             InitializeComponent();
@@ -35,13 +37,13 @@ namespace Dreaw
         {
             if (isSending)
             {
-                MessageBox.Show("Completed the last request first!");
+                MessageBox.Show("Completed the last request first!"); //Đây, chặn
                 return;
             }
             string name = txtName.Text.Trim();
             string email = txtEmail.Text.Trim();
             string password = txtPassword.Text.Trim();
-
+            //Kiểm tra dử liệu đầu vào
             if (string.IsNullOrEmpty(name) || string.IsNullOrEmpty(email) || string.IsNullOrEmpty(password))
             {
                 MessageBox.Show("Please fill all fields!", "Error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
@@ -58,26 +60,31 @@ namespace Dreaw
             {
                 Email = email
             };
+            //Gửi request bằng HttpClient
             using (var client = new HttpClient())
             {
                 isSending = true;
-                var jsonRequest = JsonConvert.SerializeObject(requestData);
-                var content = new StringContent(jsonRequest, Encoding.UTF8, "application/json");
+                var jsonRequest = JsonConvert.SerializeObject(requestData); //Đóng gói dạng JSON
+                var content = new StringContent(jsonRequest, Encoding.UTF8, "application/json"); 
                 Cursor.Current = Cursors.WaitCursor;
-                var response = await client.PostAsync($"{serverAdd}/api/signup", content);
-                if (response.IsSuccessStatusCode)
+                var response = await client.PostAsync($"{serverAdd}/api/signup", content); //HttpPost
+                if (response.IsSuccessStatusCode) //Nếu là 200 OK
                 {
-                    var responseContent = await response.Content.ReadAsStringAsync();
-                    var responseObject = JsonConvert.DeserializeObject<dynamic>(responseContent);
-                    string otp = responseObject?.otp;
-                    code newForm = new code(otp, name, email, password, "signup");
-                    isSending = false;
+                    var responseContent = 
+                        await response.Content.ReadAsStringAsync(); //Đọc thành string JSON
+                    var responseObject = 
+                        JsonConvert.DeserializeObject<dynamic>(responseContent); //Convert thành một object
+                    string otp = responseObject?.otp; //lấy ra otp
+                    code newForm = 
+                        new code(otp, name, email, password, "signup"); //Gán OTP vào form code
+                    isSending = false; //Đặt cờ Send về False
                     Cursor.Current = Cursors.Default;
-                    MessageBox.Show("A new OTP has been sent to your email.", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    MessageBox.Show("A new OTP has been sent to your email.", 
+                        "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
                     newForm.Show();
                     this.Close();
                 } 
-                else if (response.StatusCode == System.Net.HttpStatusCode.Conflict)
+                else if (response.StatusCode == System.Net.HttpStatusCode.Conflict) //Mail đã tồn tại
                 {
                     MessageBox.Show("Email exists! Please sign in!");
                     Cursor.Current = Cursors.Default;
@@ -86,7 +93,7 @@ namespace Dreaw
                 }
                 else
                 {
-                    MessageBox.Show("An error has occured!");
+                    MessageBox.Show("An error has occured!"); //Lỗi Server
                     Cursor.Current = Cursors.Default;
                     isSending = false;
                     return;
@@ -95,7 +102,7 @@ namespace Dreaw
             ClearFields();
         }
 
-        private bool IsValidEmail(string email)
+        private bool IsValidEmail(string email) 
         {
             // Sử dụng Regex để kiểm tra định dạng email
             string emailPattern = @"^[^@\s]+@[^@\s]+\.[^@\s]+$";

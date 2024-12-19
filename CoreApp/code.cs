@@ -15,7 +15,7 @@ namespace Dreaw
 {
     public partial class code : Form
     {
-        string Case;
+        string Case; //Cái này(form code) tạo ra để làm gì?
         string otp;
         bool isSending;
         string name;
@@ -41,8 +41,8 @@ namespace Dreaw
             this.otp = otp;
             this.name = "";
             this.email = email;
-            this.password = "";
-            waittoResend.Start();
+            this.password = ""; //Truyền thông tin vào
+            waittoResend.Start(); //Đếm ngược 3 phút, hết 3 phút thì mới cho gửi tiếp
             _isTicking = true;
             Case = @case;
         }
@@ -59,9 +59,8 @@ namespace Dreaw
                 MessageBox.Show("OTP is not correct!");
                 return;
             }
-            if (Case == "signup")
+            if (Case == "signup") //Nếu được tạo ra để hoàn tất Sign up
             {
-                // Tạo dữ liệu cần gửi
                 var requestData = new
                 {
                     Username = name,
@@ -93,7 +92,7 @@ namespace Dreaw
                     }
                 }
             } 
-            else
+            else //Nếu được tạo ra để hoàn tất Forgot PW
             {
                 MessageBox.Show("OTP Verification Completed!", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 newpw newpw = new newpw(email);
@@ -102,11 +101,10 @@ namespace Dreaw
             }
         }
 
-        private async void pictureBox2_Click(object sender, EventArgs e)
+        private async void pictureBox2_Click(object sender, EventArgs e) //Resend Code
         {
-            if (!_isTicking && !isSending)
+            if (!_isTicking && !isSending) 
             {
-                // Tạo dữ liệu cần gửi
                 var requestData = new
                 {
                     Email = email
@@ -122,7 +120,7 @@ namespace Dreaw
                     {
                         var responseContent = await response.Content.ReadAsStringAsync();
                         var responseObject = JsonConvert.DeserializeObject<dynamic>(responseContent);
-                        otp = responseObject?.otp;
+                        otp = responseObject?.otp; //Thay OTP bằng OTP server mới gửi
                         isSending = false;
                         MessageBox.Show("A new OTP has been sent to your email.", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
                         Cursor = Cursors.Default;
@@ -138,7 +136,7 @@ namespace Dreaw
                     }
                 }            
             }
-            else if (_isTicking) 
+            else if (_isTicking) //Nếu đang đếm 3 phút
             {
                 TimeSpan timeSpan = TimeSpan.FromMilliseconds(180000 - timer);
                 MessageBox.Show($"Wait 3 minutes to resend. {timeSpan.Minutes}:{timeSpan.Seconds:D2} remaining.");
@@ -150,7 +148,7 @@ namespace Dreaw
             }
         }
 
-        private void waittoResend_Tick(object sender, EventArgs e)
+        private void waittoResend_Tick(object sender, EventArgs e) //Đồng hồ
         {
             if (timer >= 180000)
             {

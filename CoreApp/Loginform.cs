@@ -1,4 +1,5 @@
 ﻿using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -58,7 +59,6 @@ namespace Dreaw
                 MessageBox.Show("Invalid email format!", "Error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }
-            // Tạo dữ liệu cần gửi
             var requestData = new
             {
                 Email = email,
@@ -70,23 +70,38 @@ namespace Dreaw
                 var jsonRequest = JsonConvert.SerializeObject(requestData);
                 var content = new StringContent(jsonRequest, Encoding.UTF8, "application/json");
                 Cursor.Current = Cursors.WaitCursor;
-                var response = await client.PostAsync($"{serverAdd}/api/login", content);
+                var response = await client.PostAsync($"{serverAdd}/api/login", content); //này y chang ha, khác endpoint
                 if (response.IsSuccessStatusCode)
                 {
+                    //Này khác xíu, không dùng convert thành dynamic object mà convert thành JObject
+                    // Đọc nội dung phản hồi dưới dạng chuỗi
+                    string responseBody = await response.Content.ReadAsStringAsync();
+                    // Phân tích chuỗi JSON
+                    var jsonResponse = JObject.Parse(responseBody);
                     MessageBox.Show("Sign in successful!", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
                     this.Close();
                     isSending = false;
                     Cursor.Current = Cursors.Default;
-                    world newForm = new world();
+                    var name = jsonResponse["name"].ToString(); //Lấy ra name
+                    var userID = jsonResponse["userID"].ToString(); //Lấy ra userID
+                    world newForm = new world(name, userID); //Tạo form world với tên người dùng và userID
                     newForm.Show();
                 }
-                else
+                else if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized) //Sai email hoặc pass
                 {
                     MessageBox.Show("Invalid Email or Password!", "Error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                     Cursor.Current = Cursors.Default;
                     isSending = false;
                     return;
                 }
+                else //Lỗi server
+                {
+                    MessageBox.Show("Something wrong happened!", "Error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    Cursor.Current = Cursors.Default;
+                    isSending = false;
+                    return;
+                } 
+                    
             }
         }
 

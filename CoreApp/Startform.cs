@@ -10,6 +10,14 @@ using System.Windows.Forms;
 
 namespace Dreaw
 {
+    /*Flow khi chạy app:
+     * Login -> Server xác thực -> Đúng -> world
+     * Sign up -> Server gửi OTP xác thực email -> Gửi OTP về app -> App tạo Form code với OTP kẹp vào 
+     -> Xác thực OTP trong form code -> form Code gửi lệnh lên Server -> Server lưu thông tin lên DB -> Login
+     * Forget PW -> Nhập email -> Server kiểm tra rồi gửi OTP xác thực email -> Gửi OTP về app 
+    -> App tạo Form code với OTP kẹp vào -> Xác thực OTP trong form code -> form newpw -> newpw gửi thông tin lên Server 
+    -> Server lưu pass mới lên DB -> Login
+    */
     public partial class Startform: Form
     {
         public Startform()
@@ -28,6 +36,7 @@ namespace Dreaw
 
         private void Startform_FormClosing(object sender, FormClosingEventArgs e)
         {
+            //Form này đóng == Đóng app
             Application.Exit();
         }
     }

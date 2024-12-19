@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Server.Models;
 using SignalRServer.Models;
-using System.Data.SqlClient;
+using Microsoft.Data.SqlClient;
 using System.Net.Mail;
 using System.Net;
 using System.Security.Cryptography;
@@ -11,6 +11,7 @@ namespace Server.Controllers
     [ApiController]
     public class ForgotpwController : ControllerBase
     {
+        //Gửi lên đây trước
         [Route("api/forgetpw")]
         [HttpPost]
         public async Task<IActionResult> InitializeForgotpw([FromBody] UserModel request)
@@ -20,49 +21,50 @@ namespace Server.Controllers
                 return BadRequest("Invalid request");
             }
             string email = request.Email;
-            var (success, exists) = TotheMoon(email);
-            if (!success)
+            var (success, exists) = TotheMoon(email); //Hàm xác thực, viết ở dưới
+            if (!success) //Lỗi SQL
             {
                 return Problem();
             }
-            else if (exists) 
+            else if (exists) //nếu mail tồn tại
             {
                 var OTP = GenerateVerificationCode();
                 var result = await SendVerificationEmail(email, OTP);
-                if (!result)
+                if (!result) //Lỗi SMTP
                 {
                     return Problem();
                 }
-                return Ok(new { Message = "OTP has been sent to your email.", OTP });
+                return Ok(new { Message = "OTP has been sent to your email.", OTP }); //200 OK
             }
             else
             {
-                return NotFound();
+                return NotFound(); //Không tìm thấy mail
             }
         }
 
+        //Này là xác thực xong, update
         [Route("api/updatepw")]
         [HttpPost]
         public async Task<IActionResult> FinishForgotPw([FromBody] UserModel request)
         {
             if (request == null)
             {
-                return BadRequest("Invalid request");
+                return BadRequest("Invalid request"); //Lỗi Client
             }
             string email = request.Email;
             string password = request.Password!;
-            var result = await UpdatePw(email, password);
+            var result = await UpdatePw(email, password); //Cập nhật
             if (result)
             {
                 return Ok();
             }
             else
             {
-                return Problem();
+                return Problem(); //Lỗi SQL
             }
         }
-
-        private string GenerateVerificationCode()
+        //Ở dưới là logic của Thiện và Thành, tui chỉ copy
+        private string GenerateVerificationCode() 
         {
             byte[] randomNumber = new byte[4];
             RandomNumberGenerator.Fill(randomNumber);
