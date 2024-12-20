@@ -22,6 +22,13 @@ namespace Dreaw
         public Loginform()
         {
             InitializeComponent();
+            #region FixBugUI
+            this.WindowState = FormWindowState.Maximized;
+            int screenWidth = Screen.PrimaryScreen.Bounds.Width;
+            int screenHeight = Screen.PrimaryScreen.Bounds.Height;
+            Resolution objFormResizer = new Resolution();
+            objFormResizer.ResizeForm(this, screenHeight, screenWidth);
+            #endregion
         }
 
         private void pictureBox2_Click(object sender, EventArgs e)
@@ -84,6 +91,7 @@ namespace Dreaw
                     Cursor.Current = Cursors.Default;
                     var name = jsonResponse["name"].ToString(); //Lấy ra name
                     var userID = jsonResponse["userID"].ToString(); //Lấy ra userID
+                    //abc xyz
                     world newForm = new world(name, userID); //Tạo form world với tên người dùng và userID
                     newForm.Show();
                 }
@@ -100,8 +108,7 @@ namespace Dreaw
                     Cursor.Current = Cursors.Default;
                     isSending = false;
                     return;
-                } 
-                    
+                }     
             }
         }
 

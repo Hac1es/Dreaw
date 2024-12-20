@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
@@ -12,6 +13,7 @@ namespace Dreaw.WorldForm
         private Label label1;
         private TextBox textBox1;
         private Button button1;
+        const string serverAdd = "https://localhost:7183"; //Địa chỉ server
         int codee = 0;
 
         private void InitializeComponent()
@@ -67,17 +69,45 @@ namespace Dreaw.WorldForm
         public enterCode()
         {
             InitializeComponent();
+            #region FixBugUI
+            this.WindowState = FormWindowState.Maximized;
+            int screenWidth = Screen.PrimaryScreen.Bounds.Width;
+            int screenHeight = Screen.PrimaryScreen.Bounds.Height;
+            Resolution objFormResizer = new Resolution();
+            objFormResizer.ResizeForm(this, screenHeight, screenWidth);
+            #endregion
         }
 
-        private void button1_Click(object sender, EventArgs e)
+        public string roomnaMe { get; set; }
+
+        private async void button1_Click(object sender, EventArgs e)
         {
             if (int.TryParse(textBox1.Text, out codee))
             {
-                DialogResult = DialogResult.OK; // Đánh dấu kết quả hợp lệ
-                Close(); // Đóng form
+                bool result = await IsRoomExist(codee.ToString());
+                if (!result)
+                {
+                    codee = -1;
+                    MessageBox.Show("No room with that code exists! Do you want to create new room?");
+                } 
+                else
+                {
+                    var (resultt, roomName) = await IsRoomActive(codee.ToString());
+                    if (!result)
+                    {
+                        codee = -1;
+                        MessageBox.Show("This room is not active! Contact the room owner!");
+                    }
+                    else
+                    {
+                        roomnaMe = roomName;
+                        this.Close();
+                    }
+                }
             }
             else
             {
+                codee = -1;
                 MessageBox.Show("Please enter a valid number.", "Invalid Input", MessageBoxButtons.OK, MessageBoxIcon.Warning);
             }
         }
@@ -85,6 +115,32 @@ namespace Dreaw.WorldForm
         public int GetCode()
         {
             return codee;
+        }
+
+        private async Task<bool> IsRoomExist(string code)
+        {
+            using (var httpClient = new HttpClient())
+            {
+                var content = new StringContent(code, Encoding.UTF8, "text/plain");
+                var result = await httpClient.PostAsync($"{serverAdd}/api/rooms/validIDreverse", content);
+                if (result.IsSuccessStatusCode)
+                    return true;
+                else
+                    return false;
+            }
+        }
+
+        private async Task<(bool, string)> IsRoomActive(string code)
+        {
+            using (var httpClient = new HttpClient())
+            {
+                var content = new StringContent(code, Encoding.UTF8, "text/plain");
+                var result = await httpClient.PostAsync($"{serverAdd}/api/rooms/isroomactive", content);
+                if (result.IsSuccessStatusCode)
+                    return (true, await result.Content.ReadAsStringAsync());
+                else
+                    return (false, "");
+            }
         }
     }
 }

@@ -24,12 +24,20 @@ namespace Dreaw
         const string serverIP = "127.0.0.1";
         List<userRoom> userRooms = new List<userRoom>();
         int selectedRoom = -1;
+        string roomname = "";
         readonly string usrrname;
         readonly string avtPic;
         readonly string userID;
         public world(string usrrname, string userID, string avtPic = null)
         {
             InitializeComponent();
+            #region FixBugUI
+            this.WindowState = FormWindowState.Maximized;
+            int screenWidth = Screen.PrimaryScreen.Bounds.Width;
+            int screenHeight = Screen.PrimaryScreen.Bounds.Height;
+            Resolution objFormResizer = new Resolution();
+            objFormResizer.ResizeForm(this, screenHeight, screenWidth);
+            #endregion
             userRooms.Add(new userRoom("MU -0.5", "15/12/2024", 3234));
             userRooms.Add(new userRoom("Chelsea -1", "15/12/2024", 4536));
             userRooms.Add(new userRoom("Black Goku ngầu vê lờ", "15/12/2024", 1234));
@@ -53,6 +61,7 @@ namespace Dreaw
                     }
                     room.BackColor = Color.LightYellow;
                     selectedRoom = room.ID;
+                    roomname = room.RoomnAme;
                 };
                 room.Show();
             }
@@ -61,12 +70,14 @@ namespace Dreaw
             {
                 roommm.BackColor = Color.LightYellow;
                 selectedRoom = roommm.ID;
+                roomname = roommm.RoomnAme;
             }
             this.usrrname = usrrname;
             this.avtPic = avtPic;
             this.userID = userID;
         }
 
+        //Chọn phòng từ danh sách
         private async void pictureBox4_Click(object sender, EventArgs e)
         {
             if (!is_join_a_room)
@@ -76,9 +87,10 @@ namespace Dreaw
                 if (selectedRoom == -1)
                 {
                     Cursor = Cursors.Default;
+                    is_join_a_room = false;
                     return;
                 }
-                var completed = await ConnectServer(selectedRoom, userID, usrrname);
+                var completed = await ConnectServer(selectedRoom, userID, usrrname, roomname);
                 if (completed)
                 {
                     DoAnPaint.Form1 drawingpanel = new DoAnPaint.Form1(serverIP, connection, selectedRoom, usrrname);
@@ -101,10 +113,10 @@ namespace Dreaw
         /// <summary>
         /// Kết nối tới server
         /// </summary>
-        private async Task<bool> ConnectServer(int room, string userID, string usrname)
+        private async Task<bool> ConnectServer(int room, string userID, string usrname, string roomName)
         {
             connection = new HubConnectionBuilder()
-                .WithUrl($"{serverAdd}?room={room}&userID={userID}&name={usrname}", options =>
+                .WithUrl($"{serverAdd}?room={room}&userID={userID}&name={usrname}&roomName={roomName}", options =>
                 {
                     options.HttpMessageHandlerFactory = handler =>
                     {
@@ -134,22 +146,27 @@ namespace Dreaw
             }
         }
 
+        //Tạo phòng mới
         private async void pictureBox2_Click(object sender, EventArgs e)
         {
             if (!is_join_a_room)
             {
+                var codeForm = new createRoom();
+                codeForm.ShowDialog();
+                codeForm.StartPosition = FormStartPosition.CenterScreen;
+                roomname = codeForm.RoomName;
                 is_join_a_room = true;
                 Cursor = Cursors.WaitCursor;
+                selectedRoom = Convert.ToInt32(codeForm.RoomID);
                 if (selectedRoom == -1)
                 {
+                    is_join_a_room = false;
                     Cursor = Cursors.Default;
                     return;
                 }
-                var completed = await ConnectServer(selectedRoom, userID, usrrname);
+                var completed = await ConnectServer(selectedRoom, userID, usrrname, roomname);
                 if (completed)
                 {
-                    Random random = new Random();
-                    selectedRoom = random.Next(1000, 10000); // Sinh số từ 1000 đến 9999
                     DoAnPaint.Form1 drawingpanel = new DoAnPaint.Form1(serverIP, connection, selectedRoom, usrrname);
                     drawingpanel.Show();
                 }
@@ -167,6 +184,7 @@ namespace Dreaw
             }
         }
 
+        //Join phòng
         private async void pictureBox5_Click(object sender, EventArgs e)
         {
             if (!is_join_a_room)
@@ -174,14 +192,17 @@ namespace Dreaw
                 is_join_a_room = true;
                 Cursor = Cursors.WaitCursor;
                 var codeForm = new enterCode();
+                codeForm.StartPosition = FormStartPosition.CenterScreen;
                 codeForm.ShowDialog();
                 selectedRoom = codeForm.GetCode();
+                roomname = codeForm.roomnaMe;
                 if (selectedRoom == -1)
                 {
+                    is_join_a_room = false;
                     Cursor = Cursors.Default;
                     return;
                 }
-                var completed = await ConnectServer(selectedRoom, userID, usrrname);
+                var completed = await ConnectServer(selectedRoom, userID, usrrname, roomname);
                 if (completed)
                 {
                     DoAnPaint.Form1 drawingpanel = new DoAnPaint.Form1(serverIP, connection, selectedRoom, usrrname);
