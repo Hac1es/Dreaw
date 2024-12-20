@@ -21,13 +21,6 @@ namespace Dreaw
         public newpw(string email)
         {
             InitializeComponent();
-            #region FixBugUI
-            this.WindowState = FormWindowState.Maximized;
-            int screenWidth = Screen.PrimaryScreen.Bounds.Width;
-            int screenHeight = Screen.PrimaryScreen.Bounds.Height;
-            Resolution objFormResizer = new Resolution();
-            objFormResizer.ResizeForm(this, screenHeight, screenWidth);
-            #endregion
             this.email = email;
         }
         private async void pictureBox3_Click(object sender, EventArgs e)

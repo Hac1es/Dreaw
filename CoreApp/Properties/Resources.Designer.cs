@@ -133,16 +133,6 @@ namespace Dreaw.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
-        internal static System.Drawing.Bitmap istockphoto_1557550141_612x612 {
-            get {
-                object obj = ResourceManager.GetObject("istockphoto-1557550141-612x612", resourceCulture);
-                return ((System.Drawing.Bitmap)(obj));
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized resource of type System.Drawing.Bitmap.
-        /// </summary>
         internal static System.Drawing.Bitmap join {
             get {
                 object obj = ResourceManager.GetObject("join", resourceCulture);
