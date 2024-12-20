@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Dreaw;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
@@ -25,6 +26,13 @@ namespace DoAnPaint.Utils
         public PopupNoti(Form caller, string type, string msg, bool flag = true)
         {
             InitializeComponent();
+            #region FixBugUI
+            this.WindowState = FormWindowState.Maximized;
+            int screenWidth = Screen.PrimaryScreen.Bounds.Width;
+            int screenHeight = Screen.PrimaryScreen.Bounds.Height;
+            Resolution objFormResizer = new Resolution();
+            objFormResizer.ResizeForm(this, screenHeight, screenWidth);
+            #endregion
             position.X = caller.Width - this.Width + 62;
             position.Y = caller.Height - this.Height;
             timeout = flag;

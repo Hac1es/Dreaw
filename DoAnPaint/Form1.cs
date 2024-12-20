@@ -29,6 +29,7 @@ using System.Web.UI.WebControls.WebParts;
 using System.Windows.Markup;
 using System.Windows;
 using Newtonsoft.Json;
+using Dreaw;
 
 namespace DoAnPaint
 {
@@ -37,6 +38,13 @@ namespace DoAnPaint
         public Form1(string serverip, HubConnection _conn, int Roomid, string userName, SKBitmap btmap = null)
         {
             InitializeComponent();
+            #region FixBugUI
+            this.WindowState = FormWindowState.Maximized;
+            int screenWidth = Screen.PrimaryScreen.Bounds.Width;
+            int screenHeight = Screen.PrimaryScreen.Bounds.Height;
+            Resolution objFormResizer = new Resolution();
+            objFormResizer.ResizeForm(this, screenHeight, screenWidth);
+            #endregion
             serverIP = serverip;
             RoomID = Roomid;
             var token = cts_source.Token;
