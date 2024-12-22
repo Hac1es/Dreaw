@@ -23,5 +23,5 @@ def ocr_this_image():
     #Xử lý file ảnh
     flag, result = process(img)
     if flag == False:
-        return Response(status=400)
+        return Response(status=422)
     return Response(result, status=200, content_type="text/plain")

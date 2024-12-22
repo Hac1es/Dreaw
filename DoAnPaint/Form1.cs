@@ -28,6 +28,9 @@ using Microsoft.AspNetCore.SignalR.Client;
 using System.Web.UI.WebControls.WebParts;
 using System.Windows.Markup;
 using Newtonsoft.Json;
+using System.Net.Http;
+using System.Net.Http.Headers;
+using System.Net;
 
 namespace DoAnPaint
 {
@@ -291,7 +294,7 @@ namespace DoAnPaint
         }
 
         //Ma thuật đen(Đọc chữ)
-        private void btnOCR_Click(object sender, EventArgs e)
+        private async void btnOCR_Click(object sender, EventArgs e)
         {
             setCursor(Cursorr.NONE);
             Cmd = Command.OCR;
@@ -302,6 +305,35 @@ namespace DoAnPaint
             }
             SKBitmap croped = new SKBitmap();
             bmp.ExtractSubset(croped, new SKRectI((int)selected.Left, (int)selected.Top, (int)selected.Right, (int)selected.Bottom));
+            var content = new MultipartFormDataContent();
+            SKImage image = SKImage.FromPixels(croped.PeekPixels());
+            SKData encoded = image.Encode(SKEncodedImageFormat.Jpeg, 100); // Đảm bảo định dạng JPEG
+            using (var debugFile = File.OpenWrite("C:/Users/nchin/Downloads/debug_crop.png"))
+            {
+                encoded.SaveTo(debugFile);
+                Console.WriteLine("Cropped image saved.");
+            }
+            Stream stream = encoded.AsStream();
+
+            var fileUpload = new StreamContent(stream);
+            fileUpload.Headers.ContentType = new MediaTypeHeaderValue("image/jpeg"); // Gắn MIME type chính xác
+            content.Add(fileUpload, "file", "ocrCropped.jpg"); // Tên file với phần mở rộng rõ ràng
+
+            using (var client = new HttpClient())
+            {
+                var response = await client.PostAsync("http://127.0.0.1:5000/ocr", content);
+                if (response.IsSuccessStatusCode)
+                    Console.WriteLine(await response.Content.ReadAsStringAsync());
+                else if (response.StatusCode == (HttpStatusCode)422)
+                {
+                    Console.WriteLine("Chữ mày xấu vãi cả lồn");
+                }
+                else
+                {
+                    Console.WriteLine("Lỗi server");
+                } 
+                    
+            }
         }
 
         //Sự kiện ấn chuột xuống
@@ -558,6 +590,7 @@ namespace DoAnPaint
         private async void button1_Click(object sender, EventArgs e)
         {
             await connection.StopAsync();
+            cts_source.Cancel();
             this.Dispose();
         }
 
@@ -606,6 +639,7 @@ namespace DoAnPaint
         private void Form1_Load(object sender, EventArgs e)
         {
             RoomIDShow.Text = $"Room ID: {RoomID}";
+            gr.Clear(SKColors.White);
             ptbDrawing.Invalidate();
         }
 
