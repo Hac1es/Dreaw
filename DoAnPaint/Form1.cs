@@ -27,8 +27,10 @@ using System.Runtime.CompilerServices;
 using Microsoft.AspNetCore.SignalR.Client;
 using System.Web.UI.WebControls.WebParts;
 using System.Windows.Markup;
-using System.Windows;
 using Newtonsoft.Json;
+using System.Net.Http;
+using System.Net.Http.Headers;
+using System.Net;
 
 namespace DoAnPaint
 {
@@ -292,7 +294,7 @@ namespace DoAnPaint
         }
 
         //Ma thuật đen(Đọc chữ)
-        private void btnOCR_Click(object sender, EventArgs e)
+        private async void btnOCR_Click(object sender, EventArgs e)
         {
             setCursor(Cursorr.NONE);
             Cmd = Command.OCR;
@@ -303,7 +305,35 @@ namespace DoAnPaint
             }
             SKBitmap croped = new SKBitmap();
             bmp.ExtractSubset(croped, new SKRectI((int)selected.Left, (int)selected.Top, (int)selected.Right, (int)selected.Bottom));
-            ShowNoti(this, "Pending...", "Sending request to server...", false);
+            var content = new MultipartFormDataContent();
+            SKImage image = SKImage.FromPixels(croped.PeekPixels());
+            SKData encoded = image.Encode(SKEncodedImageFormat.Jpeg, 100); // Đảm bảo định dạng JPEG
+            using (var debugFile = File.OpenWrite("C:/Users/nchin/Downloads/debug_crop.png"))
+            {
+                encoded.SaveTo(debugFile);
+                Console.WriteLine("Cropped image saved.");
+            }
+            Stream stream = encoded.AsStream();
+
+            var fileUpload = new StreamContent(stream);
+            fileUpload.Headers.ContentType = new MediaTypeHeaderValue("image/jpeg"); // Gắn MIME type chính xác
+            content.Add(fileUpload, "file", "ocrCropped.jpg"); // Tên file với phần mở rộng rõ ràng
+
+            using (var client = new HttpClient())
+            {
+                var response = await client.PostAsync("http://127.0.0.1:5000/ocr", content);
+                if (response.IsSuccessStatusCode)
+                    Console.WriteLine(await response.Content.ReadAsStringAsync());
+                else if (response.StatusCode == (HttpStatusCode)422)
+                {
+                    Console.WriteLine("Chữ mày xấu vãi cả lồn");
+                }
+                else
+                {
+                    Console.WriteLine("Lỗi server");
+                } 
+                    
+            }
         }
 
         //Sự kiện ấn chuột xuống
@@ -444,7 +474,7 @@ namespace DoAnPaint
                 HandleDrawData(currentData, currentFlag, render_canvas);
             }
             else
-                return;
+                render_canvas.DrawBitmap(bmp, 0, 0);
         }
         //Sự kiện Click chuột
         private async void ptbDrawing_MouseClick_1(object sender, MouseEventArgs e)
@@ -523,20 +553,45 @@ namespace DoAnPaint
         private void btnSave_Click(object sender, EventArgs e)
         {
             var save = new SaveFileDialog();
-            save.Filter = "Image(*.jpg) |*.jpg|(*.*)|*.*";
+            save.Filter = "Image(*.png) |*.png|(*.*)|*.*";
             save.Title = "Save Image";
             save.FileName = "Paint.jpeg";
-            using (var stream = File.OpenWrite(save.FileName))
+            if (save.ShowDialog() == DialogResult.OK)
             {
-                // Encode SKBitmap thành PNG và ghi vào stream
-                bmp.Encode(stream, SKEncodedImageFormat.Png, 100); // 100 là mức độ nén (0-100)
+                // Lấy đường dẫn tệp người dùng chọn
+                string filePath = save.FileName;
+
+                try
+                {
+                    StopConsumers();
+                    using (var image = SKImage.FromBitmap(bmp))
+                    using (var data = image.Encode(SKEncodedImageFormat.Png, 80))
+                    {
+                        // save the data to a stream
+                        using (var stream = File.OpenWrite(filePath))
+                        {
+                            data.SaveTo(stream);
+                        }
+                    }
+                    MessageBox.Show("File saved successfully!", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show($"An error occurred: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                }
+                finally
+                {
+                    StartConsumers();
+                }
             }
         }
 
         //Logout
-        private void button1_Click(object sender, EventArgs e)
+        private async void button1_Click(object sender, EventArgs e)
         {
-            this.Close();
+            await connection.StopAsync();
+            cts_source.Cancel();
+            this.Dispose();
         }
 
         //Không quan trọng
@@ -584,11 +639,28 @@ namespace DoAnPaint
         private void Form1_Load(object sender, EventArgs e)
         {
             RoomIDShow.Text = $"Room ID: {RoomID}";
+            gr.Clear(SKColors.White);
+            ptbDrawing.Invalidate();
         }
 
         private void Form1_FormClosing(object sender, FormClosingEventArgs e)
         {
             cts_source.Cancel();
+        }
+
+        private async void pictureBox21_Click(object sender, EventArgs e)
+        {
+            string stringtoSend;
+            using (var image = bmp.Encode(SKEncodedImageFormat.Png, 100))
+            {
+                stringtoSend = Convert.ToBase64String(image.ToArray());
+            }
+            var BlockUI = new UnclosableNoti("Waiting....", "Saving this Bitmap");
+            BlockUI.Show();
+            StopConsumers();
+            await connection.InvokeAsync("SaveBitmap", stringtoSend);
+            BlockUI.Close();
+            StartConsumers();
         }
     }
 }

@@ -226,6 +226,12 @@
     <Compile Include="Startform.Designer.cs">
       <DependentUpon>Startform.cs</DependentUpon>
     </Compile>
+    <Compile Include="WorldForm\CreateRoom.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="WorldForm\CreateRoom.Designer.cs">
+      <DependentUpon>CreateRoom.cs</DependentUpon>
+    </Compile>
     <Compile Include="WorldForm\enterCode.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -263,6 +269,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Startform.resx">
       <DependentUpon>Startform.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="WorldForm\CreateRoom.resx">
+      <DependentUpon>CreateRoom.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="WorldForm\enterCode.resx">
       <DependentUpon>enterCode.cs</DependentUpon>
