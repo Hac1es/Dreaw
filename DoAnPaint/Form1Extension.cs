@@ -21,6 +21,7 @@ namespace DoAnPaint
     public partial class Form1
     {
         #region Supporters
+        Form BlockNoti = new UnclosableNoti("Waiting....", "Calling from Server");
         /// <summary>
         /// Chuyển sang dạng in hoa đầu
         /// </summary>
@@ -57,10 +58,10 @@ namespace DoAnPaint
         /// <param name="what">Thông báo gì: ok, error, warning, khác</param>
         /// <param name="msg">Tin nhắn cần hiện thị</param>
         /// <param name="flag">Có tự động đóng không?</param>
-        private static void ShowNoti(Form form, string what, string msg, bool flag = true)
+        private static void ShowNoti(Form form, string what, string msg)
         {
             PopupNoti noti;
-            noti = new PopupNoti(form, what, msg, flag);
+            noti = new PopupNoti(form, what, msg);
             noti.StartPosition = FormStartPosition.Manual;
             noti.Location = noti.position;
             noti.Show();
@@ -452,11 +453,22 @@ namespace DoAnPaint
             });
             connection.On("StopConsumer", () =>
             {
+                BlockNoti.Show();
                 StopConsumers();
             });
             connection.On("StartConsumer", () =>
             {
+                BlockNoti.Close();
                 StartConsumers();
+            });
+            connection.On("RequestSync", async () =>
+            {
+                string sender;
+                using (var image = bmp.Encode(SKEncodedImageFormat.Png, 100))
+                {
+                    sender = Convert.ToBase64String(image.ToArray());
+                }
+                await connection.InvokeAsync("SendSyncData", sender);
             });
         }
 
@@ -465,10 +477,9 @@ namespace DoAnPaint
         /// </summary>
         private void DrawConsumer()
         {
-            canStart.Wait();
             foreach (var item in BOTQueue.GetConsumingEnumerable())
             {
-                canStart.Wait(0);
+                canStart.Wait();
                 var (dataa, commandd, isPrevieww) = item;
                 isPreview = isPrevieww;
                 tempData = (dataa, commandd);
@@ -481,10 +492,9 @@ namespace DoAnPaint
         /// </summary>
         private void MsgConsumer()
         {
-            canStart.Wait();
             foreach (var item in MSGQueue.GetConsumingEnumerable())
             {
-                canStart.Wait(0);
+                canStart.Wait();
                 var (msg, where, who) = item;
                 ShowMsg(msg, where, who);
             }

@@ -13,6 +13,7 @@ using Microsoft.AspNetCore.SignalR.Client;
 using System.Net.Http;
 using Dreaw.WorldForm;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 namespace Dreaw
 {
@@ -85,11 +86,22 @@ namespace Dreaw
                     Cursor = Cursors.Default;
                     return;
                 }
+                var currentbmp = await GetBitmap(selectedRoom);
                 await ConnectServer(userID, selectedRoom, roomname, userID, usrrname);
-                DoAnPaint.Form1 drawingpanel = new DoAnPaint.Form1(serverIP, connection, selectedRoom, usrrname);
-                drawingpanel.Show();
-                Cursor = Cursors.Default;
-                is_join_a_room = false;
+                if (currentbmp != null)
+                {
+                    var imageData = Convert.FromBase64String(currentbmp);
+                    var crtbmp = SKBitmap.Decode(imageData);
+                    DoAnPaint.Form1 drawingpanel = new DoAnPaint.Form1(serverIP, connection, selectedRoom, usrrname, crtbmp);
+                    is_join_a_room = false;
+                    drawingpanel.Show();
+                }
+                else
+                {
+                    DoAnPaint.Form1 drawingpanel = new DoAnPaint.Form1(serverIP, connection, selectedRoom, usrrname);
+                    is_join_a_room = false;
+                    drawingpanel.Show();
+                }
             }
             else
             {
@@ -133,6 +145,7 @@ namespace Dreaw
             }
         }
 
+        //Tạo phòng
         private async void pictureBox2_Click(object sender, EventArgs e)
         {
             if (!is_join_a_room)
@@ -178,26 +191,44 @@ namespace Dreaw
                         var isInList = userRooms.Select(room => room.ID).ToList().Contains(selectedRoom);
                         if (isInList)
                         {
-                            await ConnectServer(userID, selectedRoom, roomname, userID, usrrname);
-                            DoAnPaint.Form1 drawingpanel = new DoAnPaint.Form1(serverIP, connection, selectedRoom, usrrname);
-                            is_join_a_room = false;
-                            drawingpanel.Show();
-                        }  
-                        else
-                        {
-                            var httpcontent = new StringContent(selectedRoom.ToString(), Encoding.UTF8, "application/json");
-                            var response = await client.PostAsync($"{serverAPIAdd}/api/room/isWorking", httpcontent);
-                            if (response.IsSuccessStatusCode)
+                            var currentbmp = await GetBitmap(selectedRoom);
+                            await ConnectServer("", selectedRoom, roomname, userID, usrrname);
+                            if (currentbmp != null)
                             {
-                                roomname = await response.Content.ReadAsStringAsync();
-                                await ConnectServer("", selectedRoom, roomname, userID, usrrname);
+                                var imageData = Convert.FromBase64String(currentbmp);
+                                var crtbmp = SKBitmap.Decode(imageData);
+                                DoAnPaint.Form1 drawingpanel = new DoAnPaint.Form1(serverIP, connection, selectedRoom, usrrname, crtbmp);
+                                is_join_a_room = false;
+                                drawingpanel.Show();
                             }
                             else
                             {
-                                MessageBox.Show("This room isn't open yet! Please contact this room's owner");
-                                Cursor = Cursors.Default;
+                                DoAnPaint.Form1 drawingpanel = new DoAnPaint.Form1(serverIP, connection, selectedRoom, usrrname);
                                 is_join_a_room = false;
-                                return;
+                                drawingpanel.Show();
+                            }
+                            await ConnectServer("", selectedRoom, roomname, userID, usrrname);
+                        }  
+                        else
+                        {
+                            var content = new StringContent(selectedRoom.ToString(), Encoding.UTF8, "text/plain");
+                            var response = await client.PostAsync($"{serverAPIAdd}/api/room/getname", content);
+                            roomname = await response.Content.ReadAsStringAsync();
+                            var currentbmp = await GetBitmap(selectedRoom);
+                            await ConnectServer("", selectedRoom, roomname, userID, usrrname);
+                            if (currentbmp != null)
+                            {
+                                var imageData = Convert.FromBase64String(currentbmp);
+                                var crtbmp = SKBitmap.Decode(imageData);
+                                DoAnPaint.Form1 drawingpanel = new DoAnPaint.Form1(serverIP, connection, selectedRoom, usrrname, crtbmp);
+                                is_join_a_room = false;
+                                drawingpanel.Show();
+                            }
+                            else
+                            {
+                                DoAnPaint.Form1 drawingpanel = new DoAnPaint.Form1(serverIP, connection, selectedRoom, usrrname);
+                                is_join_a_room = false;
+                                drawingpanel.Show();
                             }
                         }
                     }
@@ -261,6 +292,22 @@ namespace Dreaw
         {
             Size textSize = TextRenderer.MeasureText(label.Text, label.Font);
             return textSize.Width > label.Width || textSize.Height > label.Height;
+        }
+
+        private async Task<string> GetBitmap(int roomCode)
+        {
+            using (var client = new HttpClient())
+            {
+                var content = new StringContent(roomCode.ToString(), Encoding.UTF8, "text/plain");
+                var response = await client.PostAsync($"{serverAPIAdd}/api/room/getcurrentbmp", content);
+                if (response.IsSuccessStatusCode)
+                {
+                    var responseContent = await response.Content.ReadAsStringAsync();
+                    return responseContent;
+                }
+                else
+                    return null;
+            }
         }
     }
 }

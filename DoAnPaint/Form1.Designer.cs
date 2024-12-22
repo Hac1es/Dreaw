@@ -191,6 +191,7 @@
             this.pictureBox21.TabIndex = 22;
             this.pictureBox21.TabStop = false;
             this.Tips.SetToolTip(this.pictureBox21, "Save to database");
+            this.pictureBox21.Click += new System.EventHandler(this.pictureBox21_Click);
             // 
             // label4
             // 

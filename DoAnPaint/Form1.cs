@@ -302,7 +302,6 @@ namespace DoAnPaint
             }
             SKBitmap croped = new SKBitmap();
             bmp.ExtractSubset(croped, new SKRectI((int)selected.Left, (int)selected.Top, (int)selected.Right, (int)selected.Bottom));
-            ShowNoti(this, "Pending...", "Sending request to server...", false);
         }
 
         //Sự kiện ấn chuột xuống
@@ -443,7 +442,7 @@ namespace DoAnPaint
                 HandleDrawData(currentData, currentFlag, render_canvas);
             }
             else
-                return;
+                render_canvas.DrawBitmap(bmp, 0, 0);
         }
         //Sự kiện Click chuột
         private async void ptbDrawing_MouseClick_1(object sender, MouseEventArgs e)
@@ -559,7 +558,7 @@ namespace DoAnPaint
         private async void button1_Click(object sender, EventArgs e)
         {
             await connection.StopAsync();
-            this.Close();
+            this.Dispose();
         }
 
         //Không quan trọng
@@ -607,11 +606,27 @@ namespace DoAnPaint
         private void Form1_Load(object sender, EventArgs e)
         {
             RoomIDShow.Text = $"Room ID: {RoomID}";
+            ptbDrawing.Invalidate();
         }
 
         private void Form1_FormClosing(object sender, FormClosingEventArgs e)
         {
             cts_source.Cancel();
+        }
+
+        private async void pictureBox21_Click(object sender, EventArgs e)
+        {
+            string stringtoSend;
+            using (var image = bmp.Encode(SKEncodedImageFormat.Png, 100))
+            {
+                stringtoSend = Convert.ToBase64String(image.ToArray());
+            }
+            var BlockUI = new UnclosableNoti("Waiting....", "Saving this Bitmap");
+            BlockUI.Show();
+            StopConsumers();
+            await connection.InvokeAsync("SaveBitmap", stringtoSend);
+            BlockUI.Close();
+            StartConsumers();
         }
     }
 }
