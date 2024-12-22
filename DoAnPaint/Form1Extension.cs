@@ -6,6 +6,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Drawing;
+using System.Drawing.Imaging;
 using System.Linq;
 using System.Net.Http;
 using System.Net.NetworkInformation;
@@ -14,6 +15,8 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.Windows.Markup;
+using System.IO;  // Đảm bảo có dòng này để sử dụng các phương thức của Path
+
 
 namespace DoAnPaint
 {
@@ -183,6 +186,7 @@ namespace DoAnPaint
         bool isPainting = false; //Có đang sử dụng tính năng không? 
         bool isDragging = false;
         bool isPreview = true;
+        bool isSelecting = false; //dùng riêng cho OCR feature
         /* 
             List Points là hàng thật, thứ sẽ hiện thị lên canvas
             List TempPoints chỉ là preview, cập nhật liên tục theo vị trí chuột
@@ -198,7 +202,6 @@ namespace DoAnPaint
         cX, cY: (currentX, currentY) Vị trị bắt đầu nhấn chuột xuống/Tọa độ bắt đầu của hình vẽ
          */
         int width = 2; //Độ dày khởi đầu nét bút
-        SKRect selected = SKRect.Empty; //Khởi đầu cho vùng chọn, chưa chọn gì
         SemaphoreSlim canStart = new SemaphoreSlim(1);
         #region Sự kiện khi Color thay đổi
         // Property của colorr
@@ -252,6 +255,7 @@ namespace DoAnPaint
         #endregion
         BlockingCollection<(string, Command, bool)> BOTQueue = new BlockingCollection<(string, Command, bool)>(); //Queue data vẽ
         BlockingCollection<(string, bool, string)> MSGQueue = new BlockingCollection<(string, bool, string)>();
+        SKRect selected = SKRect.Empty; //Khởi đầu cho vùng chọn, chưa chọn gì
         SKPaint pen = new SKPaint { IsAntialias = true }; //Bút chì
         SKPaint penenter = new SKPaint { IsAntialias = true, Style = SKPaintStyle.Stroke }; //Bút vẽ hình
         SKPaint crayon = new SKPaint { IsAntialias = true }; //Sáp màu
@@ -493,5 +497,92 @@ namespace DoAnPaint
             }    
         }
         #endregion
+
+        private async Task<string> SendImageToFlaskAPI(string imagePath)
+        {
+            // Code gửi ảnh đến Flask API, ví dụ dùng HttpClient
+            using (var client = new HttpClient())
+            {
+                var form = new MultipartFormDataContent();
+                var imageContent = new ByteArrayContent(File.ReadAllBytes(imagePath));
+                form.Add(imageContent, "file", "image.jpg");
+
+                var response = await client.PostAsync("http://127.0.0.1:5000/ocr", form);
+                if (response.IsSuccessStatusCode)
+                {
+                    return await response.Content.ReadAsStringAsync();
+                }
+                return null;
+            }
+        }
+
+        // Hàm hỗ trợ chụp ảnh từ vùng chọn của SKCanvas
+        private SKBitmap CaptureImageFromCanvas(SKRect rect)
+        {
+            try
+            {
+                var snapshot = new SKBitmap((int)rect.Width, (int)rect.Height);
+                using (var canvas = new SKCanvas(snapshot))
+                {
+                    // Vẽ lại phần cần chụp từ SKCanvas vào ảnh bitmap
+                    canvas.Clear(SKColors.Transparent); // Xoá nền cũ (nếu có)
+                    canvas.DrawBitmap(bmp, new SKRect(0, 0, rect.Width, rect.Height), rect);
+                }
+                return snapshot;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+                return null;
+            }
+        }
+
+        // Giả sử croppedImage là đối tượng SKBitmap
+        public void SaveCroppedImage(SKBitmap croppedImage, string tempPath)
+        {
+            // Chuyển đổi SKBitmap thành một MemoryStream
+            using (var stream = new MemoryStream())
+            {
+                // Lưu ảnh SKBitmap vào stream (định dạng JPEG)
+                croppedImage.Encode(stream, SKEncodedImageFormat.Jpeg, 100);
+
+                // Lưu stream vào tệp tin (tempPath)
+                File.WriteAllBytes(tempPath, stream.ToArray());
+            }
+        }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        //tính sau
+        // Sự kiện Paint - vẽ rectangle lên PictureBox
+        private void ptbDrawing_Paint(object sender, PaintEventArgs e)
+        {
+            if (isSelecting)
+            {
+                // Vẽ hình chữ nhật (Rectangle) từ điểm startPoint đến điểm hiện tại
+                e.Graphics.DrawRectangle(Pens.Red, OCR_Selected);
+            }
+        }
+
     }
 }

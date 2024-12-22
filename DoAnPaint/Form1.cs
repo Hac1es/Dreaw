@@ -29,6 +29,7 @@ using System.Web.UI.WebControls.WebParts;
 using System.Windows.Markup;
 using System.Windows;
 using Newtonsoft.Json;
+using System.Drawing.Imaging;
 
 namespace DoAnPaint
 {
@@ -268,7 +269,7 @@ namespace DoAnPaint
         private void btnClear_Click(object sender, EventArgs e)
         {
             if (selected != SKRect.Empty) //Nếu đã chọn vùng
-            {
+            {       
                 var data = new DrawingData(null, null, null, null, (int)selected.Left, (int)selected.Top, (int)selected.Right, (int)selected.Bottom);
                 string msg = JsonConvert.SerializeObject(data);
                 BOTQueue.Add((msg, Command.CLEAR, false));
@@ -306,6 +307,8 @@ namespace DoAnPaint
             ShowNoti(this, "Pending...", "Sending request to server...", false);
         }
 
+        Rectangle OCR_Selected; //Khởi đầu cho vùng chọn OCR, chưa chọn gì
+        System.Drawing.Point startPoint; // Điểm bắt đầu của vùng chọn
         //Sự kiện ấn chuột xuống
         private void ptbDrawing_MouseDown(object sender, MouseEventArgs e)
         {
@@ -318,9 +321,8 @@ namespace DoAnPaint
             }
             else if (Cmd == Command.CURSOR)
             {
-                isDragging = true;
-                isPainting = false;
-                selected = SKRect.Empty;
+                isSelecting = false;
+                startPoint = e.Location;
             }
         }
 
@@ -382,26 +384,65 @@ namespace DoAnPaint
                 BOTQueue.Add((msg, Cmd, true));
                 SendData(msg, Cmd, true);
             }    
-            if (Cmd == Command.CURSOR && isDragging == true)
+            if (Cmd == Command.CURSOR && isSelecting == true)
             {
-                selected = new SKRect(Math.Min(cX, x), Math.Min(cY, y), Math.Min(cX, x) + sX, Math.Min(cY, y) + sY);
-                Status.Text = $"Selected: ({selected.Left}, {selected.Top}), ({selected.Right}, {selected.Bottom})";
-                var data = new DrawingData(null, null, null, null, (int)selected.Left, (int)selected.Top, (int)selected.Right, (int)selected.Bottom);
-                string msg = JsonConvert.SerializeObject(data);
-                BOTQueue.Add((msg, Cmd, true));
+                // Tính toán chiều rộng và chiều cao của rectangle
+                int width = e.X - startPoint.X;
+                int height = e.Y - startPoint.Y;
+
+                // Cập nhật lại vùng chọn
+                OCR_Selected = new Rectangle(startPoint.X, startPoint.Y, width, height);
+
+                // Vẽ lại vùng chọn
+                //ptbDrawing.Invalidate();  // Yêu cầu vẽ lại
             }
         }
 
         //Sự kiện thả chuột
-        private void ptbDrawing_MouseUp(object sender, MouseEventArgs e)
+        private async void ptbDrawing_MouseUp(object sender, MouseEventArgs e)
         {
             if (Cmd != Command.CURVE && Cmd != Command.POLYGON) isPainting = false;
-            if (Cmd == Command.CURSOR && isDragging == true)
+            if (Cmd == Command.CURSOR && isSelecting == true)
             {
-                isDragging = false;
-                var data = new DrawingData(null, null, null, null, 0, 0, 0, 0);
-                string msg = JsonConvert.SerializeObject(data);
-                BOTQueue.Add((msg, Cmd, true));
+                isSelecting = false;
+
+                // Kiểm tra nếu vùng chọn hợp lệ
+                if (OCR_Selected.Width <= 0 || OCR_Selected.Height <= 0)
+                {
+                    ShowNoti(this, "warning", "Vùng chọn không hợp lệ");
+                    return;
+                }
+
+                // Đảm bảo tọa độ vùng chọn đúng với hệ tọa độ của SKCanvas
+                var rect = new SKRect(
+                    OCR_Selected.Left,
+                    OCR_Selected.Top,
+                    OCR_Selected.Left + OCR_Selected.Width,
+                    OCR_Selected.Top + OCR_Selected.Height
+                );
+
+                // Chụp ảnh từ khu vực đã chọn
+                var croppedImage = CaptureImageFromCanvas(rect);
+                if (croppedImage != null)
+                {
+                    string tempPath = Path.Combine(Path.GetTempPath(), "cropped_image.jpg");
+                    SaveCroppedImage(croppedImage, tempPath);
+
+                    // Gửi ảnh đến Flask API
+                    string result = await SendImageToFlaskAPI(tempPath);
+                    if (string.IsNullOrEmpty(result))
+                    {
+                        ShowNoti(this, "warning", "Không nhận được kết quả từ API");
+                    }
+                    else
+                    {
+                        ShowNoti(this, "ok", $"Kết quả OCR: {result}");
+                    }
+                }
+                else
+                {
+                    ShowNoti(this, "warning", "Không thể chụp ảnh từ canvas.");
+                }
             } 
                 
             if (Cmd == Command.LINE)

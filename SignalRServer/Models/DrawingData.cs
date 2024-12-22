@@ -9,7 +9,7 @@ namespace Server.Models
 {
     public static class General
     {
-        public static string SQLServer = @"Server=TUNGFTUNGFTUNGF;Database=DreawDB;Integrated Security=True;TrustServerCertificate=True;";
+        public static string SQLServer = @"Server=localhost;Database=TEST;Integrated Security=True;TrustServerCertificate=True;";
     }
     public enum Command
     {
