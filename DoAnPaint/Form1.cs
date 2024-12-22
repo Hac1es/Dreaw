@@ -27,7 +27,6 @@ using System.Runtime.CompilerServices;
 using Microsoft.AspNetCore.SignalR.Client;
 using System.Web.UI.WebControls.WebParts;
 using System.Windows.Markup;
-using System.Windows;
 using Newtonsoft.Json;
 
 namespace DoAnPaint
@@ -523,19 +522,43 @@ namespace DoAnPaint
         private void btnSave_Click(object sender, EventArgs e)
         {
             var save = new SaveFileDialog();
-            save.Filter = "Image(*.jpg) |*.jpg|(*.*)|*.*";
+            save.Filter = "Image(*.png) |*.png|(*.*)|*.*";
             save.Title = "Save Image";
             save.FileName = "Paint.jpeg";
-            using (var stream = File.OpenWrite(save.FileName))
+            if (save.ShowDialog() == DialogResult.OK)
             {
-                // Encode SKBitmap thành PNG và ghi vào stream
-                bmp.Encode(stream, SKEncodedImageFormat.Png, 100); // 100 là mức độ nén (0-100)
+                // Lấy đường dẫn tệp người dùng chọn
+                string filePath = save.FileName;
+
+                try
+                {
+                    StopConsumers();
+                    using (var image = SKImage.FromBitmap(bmp))
+                    using (var data = image.Encode(SKEncodedImageFormat.Png, 80))
+                    {
+                        // save the data to a stream
+                        using (var stream = File.OpenWrite(filePath))
+                        {
+                            data.SaveTo(stream);
+                        }
+                    }
+                    MessageBox.Show("File saved successfully!", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show($"An error occurred: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                }
+                finally
+                {
+                    StartConsumers();
+                }
             }
         }
 
         //Logout
-        private void button1_Click(object sender, EventArgs e)
+        private async void button1_Click(object sender, EventArgs e)
         {
+            await connection.StopAsync();
             this.Close();
         }
 

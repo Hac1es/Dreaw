@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Http;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
@@ -13,6 +15,7 @@ namespace Dreaw.WorldForm
         private TextBox textBox1;
         private Button button1;
         int codee = 0;
+        const string serverAdd = "https://localhost:7183";
 
         private void InitializeComponent()
         {
@@ -69,22 +72,40 @@ namespace Dreaw.WorldForm
             InitializeComponent();
         }
 
-        private void button1_Click(object sender, EventArgs e)
+        private async void button1_Click(object sender, EventArgs e)
         {
-            if (int.TryParse(textBox1.Text, out codee))
+            if (int.TryParse(textBox1.Text, out codee) && textBox1.Text.Length == 4)
             {
+                button1.Enabled = false;
                 DialogResult = DialogResult.OK; // Đánh dấu kết quả hợp lệ
+                var result = await CheckRoomExists(codee.ToString());
+                if (!result)
+                    MessageBox.Show("No room with this ID exists!", "Not exists!", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                button1.Enabled = true;
                 Close(); // Đóng form
             }
             else
             {
                 MessageBox.Show("Please enter a valid number.", "Invalid Input", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                button1.Enabled = true;
             }
         }
 
         public int GetCode()
         {
             return codee;
+        }
+
+        private async Task<bool> CheckRoomExists(string code)
+        {
+            var client = new HttpClient();
+            var content = new StringContent(code, Encoding.UTF8, "text/plain");
+            var response = await client.PostAsync($"{serverAdd}/api/room/exists", content);
+            if (response.IsSuccessStatusCode)
+            {
+                return true;
+            }    
+            return false;
         }
     }
 }

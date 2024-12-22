@@ -1,6 +1,7 @@
 ﻿using DoAnPaint.Utils;
 using Microsoft.AspNetCore.SignalR.Client;
 using Newtonsoft.Json;
+using OpenTK.Graphics.ES11;
 using SkiaSharp;
 using System;
 using System.Collections.Concurrent;
@@ -158,7 +159,8 @@ namespace DoAnPaint
                     if (data.startX.HasValue && data.startY.HasValue && data.endX.HasValue && data.endY.HasValue)
                         using (var brush = new SKPaint { Style = SKPaintStyle.Fill, Color = SKColors.White, IsAntialias = true }) // Tạo bút vẽ màu trắng
                         {
-                            canvas.DrawRect((int)data.startX, (int)data.startY, (int)data.endX, (int)data.endY, brush); // Fill màu trắng vào hình chữ nhật
+                            var select_ = new SKRect((float)data.startX, (float)data.startY, (float)data.endX, (float)data.endY);
+                            canvas.DrawRect(select_, brush); // Fill màu trắng vào hình chữ nhật
                         }
                     else
                         gr.Clear(SKColors.White);
@@ -199,7 +201,6 @@ namespace DoAnPaint
          */
         int width = 2; //Độ dày khởi đầu nét bút
         SKRect selected = SKRect.Empty; //Khởi đầu cho vùng chọn, chưa chọn gì
-        SemaphoreSlim canStart = new SemaphoreSlim(1);
         #region Sự kiện khi Color thay đổi
         // Property của colorr
         // Sự kiện xảy ra khi Color thay đổi
@@ -258,6 +259,7 @@ namespace DoAnPaint
         SKPaint dotted_pen = new SKPaint { Color = SKColors.Black, Style = SKPaintStyle.Stroke, StrokeWidth = 1, IsAntialias = true, PathEffect = SKPathEffect.CreateDash(new float[] { 10, 5 }, 0) }; //Bút dùng trong chế độ chọn
         (string, Command) tempData = (null, Command.CURSOR); //Dữ liệu tạm
         string userName; //Tên người dùng
+        ManualResetEventSlim canStart = new ManualResetEventSlim(true);
         #endregion
 
         #region Draw Methods
@@ -398,21 +400,21 @@ namespace DoAnPaint
         {
             if (!where && !chatPanel.Visible) 
                 ShowNoti(this, "New Message!", $"{who}: {msg}");
-            MessageBox.Invoke(new Action(() =>
+            msggBox.Invoke(new Action(() =>
             {
-                if (string.IsNullOrEmpty(who))
+                if (string.IsNullOrEmpty(who) && !where)
                 {
-                    AppenddText(MessageBox, $"{msg}{Environment.NewLine}", Color.Blue);
+                    AppenddText(msggBox, $"{msg}{Environment.NewLine}", Color.Blue);
                 }    
                 else if (where)
                 {
-                    AppenddText(MessageBox, "You: ", Color.Indigo);
-                    AppenddText(MessageBox, $"{msg}{Environment.NewLine}", MessageBox.ForeColor);
+                    AppenddText(msggBox, "You: ", Color.Indigo);
+                    AppenddText(msggBox, $"{msg}{Environment.NewLine}", msggBox.ForeColor);
                 }
                 else
                 {
-                    AppenddText(MessageBox, $"{who}: ", Color.SteelBlue);
-                    AppenddText(MessageBox, $"{msg}{Environment.NewLine}", MessageBox.ForeColor);
+                    AppenddText(msggBox, $"{who}: ", Color.SteelBlue);
+                    AppenddText(msggBox, $"{msg}{Environment.NewLine}", msggBox.ForeColor);
                 }
             }));
         }
@@ -448,6 +450,14 @@ namespace DoAnPaint
             {
                 MSGQueue.Add((mes, false, who));
             });
+            connection.On("StopConsumer", () =>
+            {
+                StopConsumers();
+            });
+            connection.On("StartConsumer", () =>
+            {
+                StartConsumers();
+            });
         }
 
         /// <summary>
@@ -455,6 +465,7 @@ namespace DoAnPaint
         /// </summary>
         private void DrawConsumer()
         {
+            canStart.Wait();
             foreach (var item in BOTQueue.GetConsumingEnumerable())
             {
                 canStart.Wait(0);
@@ -470,6 +481,7 @@ namespace DoAnPaint
         /// </summary>
         private void MsgConsumer()
         {
+            canStart.Wait();
             foreach (var item in MSGQueue.GetConsumingEnumerable())
             {
                 canStart.Wait(0);
@@ -491,6 +503,18 @@ namespace DoAnPaint
                 }));
                 await Task.Delay(3000);
             }    
+        }
+
+        void StopConsumers()
+        {
+            if (canStart.IsSet)
+                canStart.Reset();
+        }
+
+        void StartConsumers()
+        {
+            if (!canStart.IsSet)
+                canStart.Set();
         }
         #endregion
     }

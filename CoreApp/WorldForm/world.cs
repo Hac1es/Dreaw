@@ -12,6 +12,7 @@ using SkiaSharp;
 using Microsoft.AspNetCore.SignalR.Client;
 using System.Net.Http;
 using Dreaw.WorldForm;
+using Newtonsoft.Json;
 
 namespace Dreaw
 {
@@ -21,9 +22,12 @@ namespace Dreaw
         SKBitmap btmap;
         bool is_join_a_room;
         const string serverAdd = "https://localhost:7183/api/hub"; //Địa chỉ Server
+        const string serverAPIAdd = "https://localhost:7183";
         const string serverIP = "127.0.0.1";
         List<userRoom> userRooms = new List<userRoom>();
         int selectedRoom = -1;
+        string roomname;
+        string ownerID;
         readonly string usrrname;
         readonly string avtPic;
         readonly string userID;
@@ -53,6 +57,7 @@ namespace Dreaw
                     }
                     room.BackColor = Color.LightYellow;
                     selectedRoom = room.ID;
+                    roomname = room.room_Name;
                 };
                 room.Show();
             }
@@ -61,12 +66,14 @@ namespace Dreaw
             {
                 roommm.BackColor = Color.LightYellow;
                 selectedRoom = roommm.ID;
+                roomname = roommm.room_Name;
             }
             this.usrrname = usrrname;
             this.avtPic = avtPic;
             this.userID = userID;
         }
 
+        //Kết nối với phòng trong danh sách
         private async void pictureBox4_Click(object sender, EventArgs e)
         {
             if (!is_join_a_room)
@@ -78,16 +85,9 @@ namespace Dreaw
                     Cursor = Cursors.Default;
                     return;
                 }
-                var completed = await ConnectServer(selectedRoom, userID, usrrname);
-                if (completed)
-                {
-                    DoAnPaint.Form1 drawingpanel = new DoAnPaint.Form1(serverIP, connection, selectedRoom, usrrname);
-                    drawingpanel.Show();
-                }
-                else
-                {
-                    MessageBox.Show("Cannot connect to server!");
-                }
+                await ConnectServer(userID, selectedRoom, roomname, userID, usrrname);
+                DoAnPaint.Form1 drawingpanel = new DoAnPaint.Form1(serverIP, connection, selectedRoom, usrrname);
+                drawingpanel.Show();
                 Cursor = Cursors.Default;
                 is_join_a_room = false;
             }
@@ -101,10 +101,10 @@ namespace Dreaw
         /// <summary>
         /// Kết nối tới server
         /// </summary>
-        private async Task<bool> ConnectServer(int room, string userID, string usrname)
+        private async Task ConnectServer(string ownerID, int roomID, string roomName, string userID, string usrname)
         {
             connection = new HubConnectionBuilder()
-                .WithUrl($"{serverAdd}?room={room}&userID={userID}&name={usrname}", options =>
+                .WithUrl($"{serverAdd}?ownerID={ownerID}&roomname={roomName}&roomID={roomID}&userID={userID}&name={usrname}", options =>
                 {
                     options.HttpMessageHandlerFactory = handler =>
                     {
@@ -126,11 +126,10 @@ namespace Dreaw
             {
                 // Start the connection
                 await connection.StartAsync();
-                return true;
             }
-            catch
+            catch(Exception ex) 
             {
-                return false;
+                Console.WriteLine(ex.Message);
             }
         }
 
@@ -140,23 +139,18 @@ namespace Dreaw
             {
                 is_join_a_room = true;
                 Cursor = Cursors.WaitCursor;
+                var enterName = new CreateRoom();
+                enterName.ShowDialog();
+                selectedRoom = Convert.ToInt32(enterName.ID);
+                roomname = enterName.name;
                 if (selectedRoom == -1)
                 {
                     Cursor = Cursors.Default;
                     return;
                 }
-                var completed = await ConnectServer(selectedRoom, userID, usrrname);
-                if (completed)
-                {
-                    Random random = new Random();
-                    selectedRoom = random.Next(1000, 10000); // Sinh số từ 1000 đến 9999
-                    DoAnPaint.Form1 drawingpanel = new DoAnPaint.Form1(serverIP, connection, selectedRoom, usrrname);
-                    drawingpanel.Show();
-                }
-                else
-                {
-                    MessageBox.Show("Cannot connect to server!");
-                }
+                await ConnectServer(userID, selectedRoom, roomname, userID, usrrname);
+                DoAnPaint.Form1 drawingpanel = new DoAnPaint.Form1(serverIP, connection, selectedRoom, usrrname);
+                drawingpanel.Show();
                 Cursor = Cursors.Default;
                 is_join_a_room = false;
             }
@@ -167,6 +161,7 @@ namespace Dreaw
             }
         }
 
+        //Join phòng
         private async void pictureBox5_Click(object sender, EventArgs e)
         {
             if (!is_join_a_room)
@@ -176,23 +171,45 @@ namespace Dreaw
                 var codeForm = new enterCode();
                 codeForm.ShowDialog();
                 selectedRoom = codeForm.GetCode();
-                if (selectedRoom == -1)
+                if (selectedRoom != -1)
                 {
-                    Cursor = Cursors.Default;
-                    return;
-                }
-                var completed = await ConnectServer(selectedRoom, userID, usrrname);
-                if (completed)
-                {
-                    DoAnPaint.Form1 drawingpanel = new DoAnPaint.Form1(serverIP, connection, selectedRoom, usrrname);
-                    drawingpanel.Show();
+                    using (var client = new HttpClient())
+                    {
+                        var isInList = userRooms.Select(room => room.ID).ToList().Contains(selectedRoom);
+                        if (isInList)
+                        {
+                            await ConnectServer(userID, selectedRoom, roomname, userID, usrrname);
+                            DoAnPaint.Form1 drawingpanel = new DoAnPaint.Form1(serverIP, connection, selectedRoom, usrrname);
+                            is_join_a_room = false;
+                            drawingpanel.Show();
+                        }  
+                        else
+                        {
+                            var httpcontent = new StringContent(selectedRoom.ToString(), Encoding.UTF8, "application/json");
+                            var response = await client.PostAsync($"{serverAPIAdd}/api/room/isWorking", httpcontent);
+                            if (response.IsSuccessStatusCode)
+                            {
+                                roomname = await response.Content.ReadAsStringAsync();
+                                await ConnectServer("", selectedRoom, roomname, userID, usrrname);
+                            }
+                            else
+                            {
+                                MessageBox.Show("This room isn't open yet! Please contact this room's owner");
+                                Cursor = Cursors.Default;
+                                is_join_a_room = false;
+                                return;
+                            }
+                        }
+                    }
                 }
                 else
                 {
-                    MessageBox.Show("Cannot connect to server!");
-                }
-                Cursor = Cursors.Default;
-                is_join_a_room = false;
+                    MessageBox.Show("Code not valid!");
+                    Cursor = Cursors.Default;
+                    is_join_a_room = false;
+                    return;
+                } 
+                    
             }
             else
             {

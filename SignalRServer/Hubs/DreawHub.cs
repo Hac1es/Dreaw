@@ -4,88 +4,74 @@ using Server.Models;
 using System.Collections.Concurrent;
 using Umbraco.Core.Collections;
 using System.Collections.Generic;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace SignalRServer.Hubs
 {
     public class DreawHub : Hub
     {
-        private static ConcurrentDictionary<string, (string, string, string)> RoomUserPair = new ConcurrentDictionary<string, (string, string, string)>();
+        private static ConcurrentDictionary<string, (string, string, string, string)> RoomUserMapping = new ConcurrentDictionary<string, (string, string, string, string)>();
         private static ConcurrentDictionary<string, string> RoomOwner = new ConcurrentDictionary<string, string>();
         public async Task BroadcastDraw(string data, Command cmd, bool isPreview)
         {
-            RoomUserPair.TryGetValue(Context.ConnectionId, out var pair);
+            RoomUserMapping.TryGetValue(Context.ConnectionId, out var pair);
             var currentGroup = pair.Item1;
             await Clients.OthersInGroup(currentGroup).SendAsync("HandleDrawSignal", data, cmd, isPreview);
         }
 
         public async Task BroadcastMsg(string msg, string who)
         {
-            RoomUserPair.TryGetValue(Context.ConnectionId, out var pair);
+            RoomUserMapping.TryGetValue(Context.ConnectionId, out var pair);
             var currentGroup = pair.Item1;
             await Clients.OthersInGroup(currentGroup).SendAsync("HandleMessage", msg, who);
         }
 
-        /*public async Task/*<bool> SaveRoom(string bmp)
+        public async Task StopConsumer()
         {
-            RoomUserPair.TryGetValue(Context.ConnectionId, out var caller);
-            //var result = await CheckIfRoomOwner(caller.Item1, caller.Item2);
-            //if (result)
-            //{
-            //    await SavingBitmap(bmp, caller.Item1, DateTime.UtcNow);
-            //   return true;
-            //}
-            //return false;
-        }*/
+            RoomUserMapping.TryGetValue(Context.ConnectionId, out var pair);
+            var currentGroup = pair.Item1;
+            await Clients.OthersInGroup(currentGroup).SendAsync("StopYourConsumer");
+        }
         
         public override async Task OnConnectedAsync()
         {
             var httpContext = Context.GetHttpContext()!;
-            var Name = httpContext.Request.Query["name"].ToString();
+            var userName = httpContext.Request.Query["name"].ToString();
             var userID = httpContext.Request.Query["userID"].ToString();
-            var room = httpContext.Request.Query["room"].ToString();
-            if (string.IsNullOrEmpty(userID) || string.IsNullOrEmpty(room) || string.IsNullOrEmpty(Name))
+            var roomID = httpContext.Request.Query["roomID"].ToString();
+            var roomName = httpContext.Request.Query["roomname"].ToString();
+            var roomOwner = httpContext.Request.Query["ownerID"].ToString();
+            if (string.IsNullOrEmpty(userID) || string.IsNullOrEmpty(roomID) || string.IsNullOrEmpty(userName) || string.IsNullOrEmpty(roomName))
             {
                 Console.WriteLine("Kết nối không hợp lệ.");
                 Context.Abort(); // Đóng kết nối
                 return;
             }
-            RoomUserPair.TryAdd(Context.ConnectionId, (room, userID, Name));
-            await AddToGroup(Name, Context.ConnectionId, room);
+            RoomUserMapping.TryAdd(Context.ConnectionId, (roomID, roomName, userID, userName));
+            RoomOwner.TryAdd(roomID, roomOwner);
+            await AddToGroup(userName, Context.ConnectionId, roomID);
             await base.OnConnectedAsync(); 
         }
 
         public override async Task OnDisconnectedAsync(Exception? exception)
         {
-            (string, string, string) caller;
-            RoomUserPair.TryRemove(Context.ConnectionId, out caller);
-            await RemoveFromGroup(caller.Item3, Context.ConnectionId, caller.Item1);
-            //await CheckIfRoomOwner(caller.Item1, caller.Item2);
+            (string, string, string, string) caller;
+            RoomUserMapping.TryGetValue(Context.ConnectionId, out caller);
+            await RemoveFromGroup(caller.Item4, Context.ConnectionId, caller.Item1);
+            RoomUserMapping.TryRemove(Context.ConnectionId, out _);
             await base.OnDisconnectedAsync(exception);
         }
 
-        private async Task<bool> CheckIfRoomOwner(string room, string userID)
+        public async Task AddToGroup(string clientName, string clientID, string groupID)
         {
-            await Task.Delay(1000);
-            return true;
-        }
-
-        private Task SavingBitmap(string bmp, string room, DateTime now)
-        {
-            return Task.Delay(1000);
-        }
-
-        public async Task AddToGroup(string clientName, string clientID, string groupName)
-        {
-            await Groups.AddToGroupAsync(clientID, groupName);
-
+            await Groups.AddToGroupAsync(clientID, groupID);
             await BroadcastMsg($"{clientName} has joined the room.", "");
         }
 
-        public async Task RemoveFromGroup(string clientName, string clientID, string groupName)
+        public async Task RemoveFromGroup(string clientName, string clientID, string groupID)
         {
-            await Groups.RemoveFromGroupAsync(clientID, groupName);
-
-            await BroadcastMsg($"{clientName} has left the room.", "");
+            BroadcastMsg($"{clientName} has left the room.", "").Wait();
+            await Groups.RemoveFromGroupAsync(clientID, groupID);
         }
     }
 }
