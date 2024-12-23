@@ -458,7 +458,17 @@ namespace DoAnPaint
             });
             connection.On("StartConsumer", () =>
             {
-                BlockNoti.Close();
+                if (BlockNoti.InvokeRequired)
+                {
+                    BlockNoti.BeginInvoke(new Action(() =>
+                    {
+                        BlockNoti.Close();
+                    }));
+                }
+                else
+                {
+                    BlockNoti.Close();
+                }
                 StartConsumers();
             });
             connection.On("RequestSync", async () =>

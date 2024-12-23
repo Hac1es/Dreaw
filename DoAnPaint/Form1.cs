@@ -31,28 +31,23 @@ using Newtonsoft.Json;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Net;
+using Newtonsoft.Json.Linq;
 
 namespace DoAnPaint
 {
     public partial class Form1 : Form
     {
-        public Form1(string serverip, HubConnection _conn, int Roomid, string userName, SKBitmap btmap = null)
+        public Form1(string serverip,  int Roomid, string userName, SKBitmap btmap = null)
         {
             InitializeComponent();
             serverIP = serverip;
             RoomID = Roomid;
-            var token = cts_source.Token;
             if (btmap == null)
                 bmp = new SKBitmap(ptbDrawing.Width, ptbDrawing.Height);
             else
                 bmp = btmap;
-            connection = _conn;
             gr = new SKCanvas(bmp);
             this.userName = userName;
-            _ = Task.Run(() => DrawConsumer());
-            _ = Task.Run(() => MsgConsumer());
-            _ = Task.Run(() => ListenForSignal());
-            _ = Task.Run(() => GetPing(token), token);
             #region Linh tinh
             /*Toàn bộ mọi thứ ở đây là liên quan tới UI
              * Logic: Nó làm 2 thứ:
@@ -136,6 +131,11 @@ namespace DoAnPaint
             // Đặt lệnh khởi tạo
             Cmd = Command.CURSOR;
             #endregion
+        }
+
+        public void SetConn(HubConnection conn)
+        {
+            connection = conn;
         }
 
         //Chế độ Line
@@ -303,16 +303,18 @@ namespace DoAnPaint
                 Cmd = Command.CURSOR;
                 return;
             }
+            if (isPainting)
+            {
+                ShowNoti(this, "warning", "Completed last action first!");
+                return;
+            }
+            isPainting = true;
+            const string serverAdd = "https://localhost:7183";
             SKBitmap croped = new SKBitmap();
             bmp.ExtractSubset(croped, new SKRectI((int)selected.Left, (int)selected.Top, (int)selected.Right, (int)selected.Bottom));
             var content = new MultipartFormDataContent();
             SKImage image = SKImage.FromPixels(croped.PeekPixels());
             SKData encoded = image.Encode(SKEncodedImageFormat.Jpeg, 100); // Đảm bảo định dạng JPEG
-            using (var debugFile = File.OpenWrite("C:/Users/nchin/Downloads/debug_crop.png"))
-            {
-                encoded.SaveTo(debugFile);
-                Console.WriteLine("Cropped image saved.");
-            }
             Stream stream = encoded.AsStream();
 
             var fileUpload = new StreamContent(stream);
@@ -321,19 +323,20 @@ namespace DoAnPaint
 
             using (var client = new HttpClient())
             {
-                var response = await client.PostAsync("http://127.0.0.1:5000/ocr", content);
+                var response = await client.PostAsync($"{serverAdd}/ocr", content);
                 if (response.IsSuccessStatusCode)
-                    Console.WriteLine(await response.Content.ReadAsStringAsync());
+                    MessageBox.Show(await response.Content.ReadAsStringAsync());
                 else if (response.StatusCode == (HttpStatusCode)422)
                 {
-                    Console.WriteLine("Chữ mày xấu vãi cả lồn");
+                    MessageBox.Show("Chữ mày xấu vãi cả lồn");
                 }
                 else
                 {
-                    Console.WriteLine("Lỗi server");
-                } 
-                    
+                    MessageBox.Show("Lỗi server");
+                }    
             }
+            isPainting = false;
+            Cmd = Command.CURSOR;
         }
 
         //Sự kiện ấn chuột xuống
@@ -641,6 +644,11 @@ namespace DoAnPaint
             RoomIDShow.Text = $"Room ID: {RoomID}";
             gr.Clear(SKColors.White);
             ptbDrawing.Invalidate();
+            var token = cts_source.Token;
+            _ = Task.Run(() => GetPing(token), token);
+            _ = Task.Run(() => DrawConsumer());
+            _ = Task.Run(() => MsgConsumer());
+            _ = Task.Run(() => ListenForSignal());
         }
 
         private void Form1_FormClosing(object sender, FormClosingEventArgs e)

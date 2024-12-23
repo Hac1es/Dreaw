@@ -72,15 +72,12 @@ namespace Dreaw.WorldForm
             InitializeComponent();
         }
 
-        private async void button1_Click(object sender, EventArgs e)
+        private void button1_Click(object sender, EventArgs e)
         {
             if (int.TryParse(textBox1.Text, out codee) && textBox1.Text.Length == 4)
             {
                 button1.Enabled = false;
                 DialogResult = DialogResult.OK; // Đánh dấu kết quả hợp lệ
-                var result = await CheckRoomExists(codee.ToString());
-                if (!result)
-                    MessageBox.Show("No room with this ID exists!", "Not exists!", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 button1.Enabled = true;
                 Close(); // Đóng form
             }
@@ -94,18 +91,6 @@ namespace Dreaw.WorldForm
         public int GetCode()
         {
             return codee;
-        }
-
-        private async Task<bool> CheckRoomExists(string code)
-        {
-            var client = new HttpClient();
-            var content = new StringContent(code, Encoding.UTF8, "text/plain");
-            var response = await client.PostAsync($"{serverAdd}/api/room/exists", content);
-            if (response.IsSuccessStatusCode)
-            {
-                return true;
-            }    
-            return false;
         }
     }
 }

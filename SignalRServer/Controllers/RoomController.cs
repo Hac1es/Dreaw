@@ -61,6 +61,7 @@ namespace Server.Controllers
             .Select(c => c.Key) // Chọn ra connectionID (key)
             .FirstOrDefault(); // Lấy kết quả đầu tiên, nếu không có trả về null
                     var data = await DreawHub.GetUserBitmap(targetConnection!, _hubContext);
+                    await _hubContext.Clients.Group(roomID).SendAsync("StartConsumer");
                     return Ok(data);
                 }
                 else

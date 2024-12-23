@@ -184,6 +184,7 @@
             this.pictureBox21.BackColor = System.Drawing.Color.Transparent;
             this.pictureBox21.BackgroundImage = global::DoAnPaint.Properties.Resources.save;
             this.pictureBox21.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Zoom;
+            this.pictureBox21.Cursor = System.Windows.Forms.Cursors.Hand;
             this.pictureBox21.Location = new System.Drawing.Point(1647, 15);
             this.pictureBox21.Margin = new System.Windows.Forms.Padding(4);
             this.pictureBox21.Name = "pictureBox21";
@@ -223,6 +224,7 @@
             this.btnOCR.BackColor = System.Drawing.Color.Transparent;
             this.btnOCR.BackgroundImage = global::DoAnPaint.Properties.Resources.ic_read;
             this.btnOCR.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Zoom;
+            this.btnOCR.Cursor = System.Windows.Forms.Cursors.Hand;
             this.btnOCR.Location = new System.Drawing.Point(1519, 15);
             this.btnOCR.Margin = new System.Windows.Forms.Padding(4);
             this.btnOCR.Name = "btnOCR";
