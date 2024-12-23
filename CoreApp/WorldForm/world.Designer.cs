@@ -36,14 +36,12 @@
             this.pictureBox1 = new System.Windows.Forms.PictureBox();
             this.userRoomList = new System.Windows.Forms.FlowLayoutPanel();
             this.usrname = new System.Windows.Forms.Label();
-            this.Avatarr = new System.Windows.Forms.PictureBox();
             this.toolTip1 = new System.Windows.Forms.ToolTip(this.components);
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox5)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox4)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox2)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox3)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.Avatarr)).BeginInit();
             this.SuspendLayout();
             // 
             // pictureBox5
@@ -125,21 +123,11 @@
             this.usrname.Text = "Tùng Goku";
             this.usrname.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             // 
-            // Avatarr
-            // 
-            this.Avatarr.BackColor = System.Drawing.Color.Transparent;
-            this.Avatarr.Location = new System.Drawing.Point(23, 5);
-            this.Avatarr.Name = "Avatarr";
-            this.Avatarr.Size = new System.Drawing.Size(140, 130);
-            this.Avatarr.TabIndex = 12;
-            this.Avatarr.TabStop = false;
-            // 
             // world
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(1748, 954);
-            this.Controls.Add(this.Avatarr);
             this.Controls.Add(this.usrname);
             this.Controls.Add(this.userRoomList);
             this.Controls.Add(this.pictureBox5);
@@ -157,7 +145,6 @@
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox2)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox3)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.Avatarr)).EndInit();
             this.ResumeLayout(false);
 
         }
@@ -171,7 +158,6 @@
         private System.Windows.Forms.PictureBox pictureBox5;
         private System.Windows.Forms.FlowLayoutPanel userRoomList;
         private System.Windows.Forms.Label usrname;
-        private System.Windows.Forms.PictureBox Avatarr;
         private System.Windows.Forms.ToolTip toolTip1;
     }
 }

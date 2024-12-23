@@ -30,7 +30,6 @@ namespace Dreaw
         string roomname;
         string ownerID;
         readonly string usrrname;
-        readonly string avtPic;
         readonly string userID;
         public world(string usrrname, string userID, string avtPic = null)
         {
@@ -70,7 +69,6 @@ namespace Dreaw
                 roomname = roommm.room_Name;
             }
             this.usrrname = usrrname;
-            this.avtPic = avtPic;
             this.userID = userID;
         }
 
@@ -88,20 +86,21 @@ namespace Dreaw
                 }
                 var currentbmp = await GetBitmap(selectedRoom);
                 await ConnectServer(userID, selectedRoom, roomname, userID, usrrname);
+                DoAnPaint.Form1 drawingpanel;
                 if (currentbmp != null)
                 {
                     var imageData = Convert.FromBase64String(currentbmp);
                     var crtbmp = SKBitmap.Decode(imageData);
-                    DoAnPaint.Form1 drawingpanel = new DoAnPaint.Form1(serverIP, connection, selectedRoom, usrrname, crtbmp);
+                    drawingpanel = new DoAnPaint.Form1(serverIP, selectedRoom, usrrname, crtbmp);
                     is_join_a_room = false;
-                    drawingpanel.Show();
                 }
                 else
                 {
-                    DoAnPaint.Form1 drawingpanel = new DoAnPaint.Form1(serverIP, connection, selectedRoom, usrrname);
+                    drawingpanel = new DoAnPaint.Form1(serverIP, selectedRoom, usrrname);
                     is_join_a_room = false;
-                    drawingpanel.Show();
                 }
+                drawingpanel.SetConn(connection);
+                drawingpanel.Show();
             }
             else
             {
@@ -162,7 +161,8 @@ namespace Dreaw
                     return;
                 }
                 await ConnectServer(userID, selectedRoom, roomname, userID, usrrname);
-                DoAnPaint.Form1 drawingpanel = new DoAnPaint.Form1(serverIP, connection, selectedRoom, usrrname);
+                DoAnPaint.Form1 drawingpanel = new DoAnPaint.Form1(serverIP, selectedRoom, usrrname);
+                drawingpanel.SetConn(connection);
                 drawingpanel.Show();
                 Cursor = Cursors.Default;
                 is_join_a_room = false;
@@ -189,47 +189,49 @@ namespace Dreaw
                     using (var client = new HttpClient())
                     {
                         var isInList = userRooms.Select(room => room.ID).ToList().Contains(selectedRoom);
+                        DoAnPaint.Form1 drawingpanel;
                         if (isInList)
                         {
                             var currentbmp = await GetBitmap(selectedRoom);
-                            await ConnectServer("", selectedRoom, roomname, userID, usrrname);
+                            await ConnectServer(userID, selectedRoom, roomname, userID, usrrname);
                             if (currentbmp != null)
                             {
                                 var imageData = Convert.FromBase64String(currentbmp);
                                 var crtbmp = SKBitmap.Decode(imageData);
-                                DoAnPaint.Form1 drawingpanel = new DoAnPaint.Form1(serverIP, connection, selectedRoom, usrrname, crtbmp);
+                                drawingpanel = new DoAnPaint.Form1(serverIP, selectedRoom, usrrname, crtbmp);
                                 is_join_a_room = false;
-                                drawingpanel.Show();
                             }
                             else
                             {
-                                DoAnPaint.Form1 drawingpanel = new DoAnPaint.Form1(serverIP, connection, selectedRoom, usrrname);
+                                drawingpanel = new DoAnPaint.Form1(serverIP, selectedRoom, usrrname);
                                 is_join_a_room = false;
-                                drawingpanel.Show();
                             }
-                            await ConnectServer("", selectedRoom, roomname, userID, usrrname);
+                            drawingpanel.SetConn(connection);
+                            drawingpanel.Show();
                         }  
                         else
                         {
                             var content = new StringContent(selectedRoom.ToString(), Encoding.UTF8, "text/plain");
                             var response = await client.PostAsync($"{serverAPIAdd}/api/room/getname", content);
-                            roomname = await response.Content.ReadAsStringAsync();
+                            if (response.IsSuccessStatusCode)
+                                roomname = await response.Content.ReadAsStringAsync();
+                            else roomname = "";
                             var currentbmp = await GetBitmap(selectedRoom);
                             await ConnectServer("", selectedRoom, roomname, userID, usrrname);
                             if (currentbmp != null)
                             {
                                 var imageData = Convert.FromBase64String(currentbmp);
                                 var crtbmp = SKBitmap.Decode(imageData);
-                                DoAnPaint.Form1 drawingpanel = new DoAnPaint.Form1(serverIP, connection, selectedRoom, usrrname, crtbmp);
+                                drawingpanel = new DoAnPaint.Form1(serverIP, selectedRoom, usrrname, crtbmp);
                                 is_join_a_room = false;
-                                drawingpanel.Show();
                             }
                             else
                             {
-                                DoAnPaint.Form1 drawingpanel = new DoAnPaint.Form1(serverIP, connection, selectedRoom, usrrname);
+                                drawingpanel = new DoAnPaint.Form1(serverIP, selectedRoom, usrrname);
                                 is_join_a_room = false;
-                                drawingpanel.Show();
                             }
+                            drawingpanel.SetConn(connection);
+                            drawingpanel.Show();
                         }
                     }
                 }
@@ -256,8 +258,6 @@ namespace Dreaw
 
         private void world_Load(object sender, EventArgs e)
         {
-            if (string.IsNullOrEmpty(avtPic))
-                Avatarr.Visible = false;
             AdjustFontSize(usrname, usrrname);
             usrname.Text = usrrname;
             if (IsTextTruncated(usrname))

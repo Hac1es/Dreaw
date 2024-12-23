@@ -47,7 +47,7 @@ namespace SignalRServer.Hubs
             var roomID = httpContext.Request.Query["roomID"].ToString();
             var roomName = httpContext.Request.Query["roomname"].ToString();
             var roomOwner = httpContext.Request.Query["ownerID"].ToString();
-            if (string.IsNullOrEmpty(userID) || string.IsNullOrEmpty(roomID) || string.IsNullOrEmpty(userName) || string.IsNullOrEmpty(roomName))
+            if (string.IsNullOrEmpty(userID) || string.IsNullOrEmpty(roomID))
             {
                 Console.WriteLine("Kết nối không hợp lệ.");
                 Context.Abort(); // Đóng kết nối
