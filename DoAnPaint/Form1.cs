@@ -43,10 +43,16 @@ namespace DoAnPaint
             serverIP = serverip;
             RoomID = Roomid;
             if (btmap == null)
+            {
                 bmp = new SKBitmap(ptbDrawing.Width, ptbDrawing.Height);
+                gr = new SKCanvas(bmp);
+                gr.Clear(SKColors.White);
+            }
             else
+            {
                 bmp = btmap;
-            gr = new SKCanvas(bmp);
+                gr = new SKCanvas(bmp);
+            }
             this.userName = userName;
             #region Linh tinh
             /*Toàn bộ mọi thứ ở đây là liên quan tới UI
@@ -325,18 +331,26 @@ namespace DoAnPaint
             {
                 var response = await client.PostAsync($"{serverAdd}/ocr", content);
                 if (response.IsSuccessStatusCode)
-                    MessageBox.Show(await response.Content.ReadAsStringAsync());
+                {
+                    string contentt = await response.Content.ReadAsStringAsync();
+                    MSGQueue.Add(($"Result: {contentt}", false, ""));
+                    var data = new DrawingData(null, null, null, null, (int)(selected.Left), (int)selected.Top, (int)selected.Right, (int)selected.Bottom, null, null, contentt);
+                    string jsondata = JsonConvert.SerializeObject(data);
+                    BOTQueue.Add((jsondata, Command.OCR, false));
+                    SendData(jsondata, Command.OCR, false);
+                }    
                 else if (response.StatusCode == (HttpStatusCode)422)
                 {
-                    MessageBox.Show("Chữ mày xấu vãi cả lồn");
+                    ShowNoti(this, "warning", "Can't read!");
                 }
                 else
                 {
-                    MessageBox.Show("Lỗi server");
+                    ShowNoti(this, "error", "Something goes wrong!");
                 }    
             }
             isPainting = false;
             Cmd = Command.CURSOR;
+            selected = SKRect.Empty;
         }
 
         //Sự kiện ấn chuột xuống
@@ -642,7 +656,6 @@ namespace DoAnPaint
         private void Form1_Load(object sender, EventArgs e)
         {
             RoomIDShow.Text = $"Room ID: {RoomID}";
-            gr.Clear(SKColors.White);
             ptbDrawing.Invalidate();
             var token = cts_source.Token;
             _ = Task.Run(() => GetPing(token), token);

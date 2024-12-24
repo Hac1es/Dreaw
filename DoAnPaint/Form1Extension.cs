@@ -7,12 +7,14 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Drawing;
+using System.IO;
 using System.Linq;
 using System.Net.Http;
 using System.Net.NetworkInformation;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Web.UI.WebControls;
 using System.Windows.Forms;
 using System.Windows.Markup;
 
@@ -169,6 +171,22 @@ namespace DoAnPaint
                 case Command.CURSOR:
                     var selectedd = new SKRect((float)data.startX, (float)data.startY, (float)data.endX, (float)data.endY);
                     canvas.DrawRect(selectedd, dotted_pen);
+                    break;
+                case Command.OCR:
+                    // Truy xuất phông chữ từ Resources
+                    byte[] fontData = Properties.Resources.DFVN_Corose; // Tên của phông chữ trong Resources
+                    MemoryStream stream = new MemoryStream(fontData);
+                    // Tạo SKTypeface từ luồng
+                    var typeface = SKTypeface.FromStream(stream);
+                    // Thiết lập SKPaint với phông chữ
+                    var font = new SKFont(typeface, 80);    // Tạo SKFont với kích thước 50
+                    var paint = new SKPaint { Color = SKColors.Black, IsAntialias = true };
+                    using (var brush = new SKPaint { Style = SKPaintStyle.Fill, Color = SKColors.White, IsAntialias = true }) // Tạo bút vẽ màu trắng
+                    {
+                        var select_ = new SKRect((float)data.startX, (float)data.startY, (float)data.endX, (float)data.endY);
+                        canvas.DrawRect(select_, brush); // Fill màu trắng vào hình chữ nhật
+                    }
+                    gr.DrawText(data.ocrResult, (float)(data.startX + (data.startX + data.endX)/4), (float)(data.startY + (data.startY + data.endY) / 4), font, paint);
                     break;
             }
         }
@@ -399,13 +417,11 @@ namespace DoAnPaint
         }
         private void ShowMsg(string msg, bool where, string who)
         {
-            if (!where && !chatPanel.Visible) 
-                ShowNoti(this, "New Message!", $"{who}: {msg}");
             msggBox.Invoke(new Action(() =>
             {
                 if (string.IsNullOrEmpty(who) && !where)
                 {
-                    AppenddText(msggBox, $"{msg}{Environment.NewLine}", Color.Blue);
+                    AppenddText(msggBox, $"{msg}{Environment.NewLine}", msggBox.ForeColor);
                 }    
                 else if (where)
                 {
