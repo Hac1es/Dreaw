@@ -380,6 +380,7 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="Resources\DFVN Corose.ttf" />
     <None Include="Resources\ic_edit_color.png" />
   </ItemGroup>
   <ItemGroup>

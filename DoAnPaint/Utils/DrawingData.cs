@@ -69,6 +69,8 @@ namespace DoAnPaint.Utils
         public int? startX {  get; set; }
         public int? startY { get; set; }
         public int? width { get; set; }
+
+        public string ocrResult { get; set; }
         /// <param name="coloR">Màu vẽ</param>
         /// <param name="widtH">Độ dày nét bút</param>
         /// <param name="pointX">điểm bắt đầu trong các tính năng nhóm Pen</param>
@@ -79,7 +81,7 @@ namespace DoAnPaint.Utils
         /// <param name="startY">tọa độ X bắt đầu cho các tính năng nhóm Shape</param>
         /// <param name="points">danh sách các điểm cho tính năng Curve và Polygon</param>
         /// <param name="syncBitmap">Bitmap dùng để đồng bộ hóa</param>
-        public DrawingData(SKColor? coloR = null, int? widtH = null, SKPoint? pointX = null, SKPoint? pointY = null, int? startX = null, int? startY = null, int? endX = null, int? endY = null, List<SKPoint> points = null, SKBitmap syncBitmap = null)
+        public DrawingData(SKColor? coloR = null, int? widtH = null, SKPoint? pointX = null, SKPoint? pointY = null, int? startX = null, int? startY = null, int? endX = null, int? endY = null, List<SKPoint> points = null, SKBitmap syncBitmap = null, string ocrResult = null)
         {
             this.Bitmap = syncBitmap;
             this.color = coloR;
@@ -91,6 +93,7 @@ namespace DoAnPaint.Utils
             this.startX = startX;
             this.startY = startY;
             this.width = widtH;
+            this.ocrResult = ocrResult;
         }
     }
 
